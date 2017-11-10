@@ -1,0 +1,11 @@
+Epoch, Training Set Accuracy, Generalization Set Accuracy, Validation Set Accuracy, Training Set MSE, Generalization Set MSE, Validation Set MSE, 
+0,30.5177,-nan,3.26531,0.0858373,-nan,0.0515785,19.32
+5,92.9155,-nan,94.2857,0.00780144,-nan,0.0027048,3.39176
+10,97.0027,-nan,97.9592,0.00420766,-nan,0.0016209,2.25764
+15,98.6376,-nan,97.9592,0.00317311,-nan,0.00142471,1.79856
+20,98.0926,-nan,98.7755,0.00262986,-nan,0.00166646,1.69039
+25,98.3651,-nan,98.7755,0.00107523,-nan,0.00238727,1.65695
+30,99.1826,-nan,98.7755,0.000574078,-nan,0.00283398,1.488
+35,99.455,-nan,98.7755,0.000399567,-nan,0.00309472,1.36202
+39,99.7275,-nan,99.1837,0.000338001,-nan,0.00320487,1.30388
+Training Complete!!! - > Elapsed Epochs: 39 Validation Set Accuracy: 99.1837 Validation Set MSE: 0.00320487,1.30388

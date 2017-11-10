@@ -1,0 +1,7 @@
+#Input,225
+#Neuron,100
+#Output,1
+#TrainingSet,1
+Accuracy(%),99
+Learning_rate,0.01
+Momentum,0.9
