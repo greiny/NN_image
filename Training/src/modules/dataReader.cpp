@@ -93,6 +93,18 @@ bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float
 
 		}
 
+/* for checking normalization*/
+		ofstream myfile("log/imgdata_norm.csv");
+		for(int iii=0; iii < data.size(); iii++)
+		{
+			for(int jjj=0; jjj < nInputs; jjj++)
+			{
+				myfile << data[iii]->pattern[jjj] <<",";
+			}
+			myfile << endl;
+		}
+		myfile.close();
+
 		//shuffle data
 		random_shuffle(data.begin(), data.end());
 
