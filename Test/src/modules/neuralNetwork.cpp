@@ -366,33 +366,37 @@ void neuralNetwork::feedForward(double* pattern)
 		for( int i=0; i <= nInput; i++ ) hiddenNeurons[0][j] += inputNeurons[i] * wInputHidden[i][j];
 		//set to result of sigmoid
 		hiddenNeurons[0][j] = activationFunction( hiddenNeurons[0][j] );
+		cout << "0000 = " << hiddenNeurons[0][j] << endl;
 	}
 
 	if (nLayer>1)
 	{
-		for (int k=0; k<nLayer-1; k++)
+		for (int k=1; k<nLayer; k++)
 		{
 			//Calculate Hidden Layer values - include bias neuron
-			for(int j=0; j < nHidden[k+1]; j++)
+			for(int j=0; j < nHidden[k]; j++)
 			{
 				//clear value
 				hiddenNeurons[k][j] = 0;
 				//get weighted sum of pattern and bias neuron
-				for( int i=0; i <= nHidden[k]; i++ ) hiddenNeurons[k][j] += hiddenNeurons[k][i] * wHiddenHidden[k][i][j];
+				for( int i=0; i <= nHidden[k-1]; i++ )
+				{
+					hiddenNeurons[k][j] += hiddenNeurons[k][i] * wHiddenHidden[k-1][i][j];
+				}
 				//set to result of sigmoid
 				hiddenNeurons[k][j] = activationFunction( hiddenNeurons[k][j] );
 			}
 		}
 	}
 
-	for(int k=0; k < nOutput; k++)
+	for(int j=0; j < nOutput; j++)
 	{
 		//clear value
-		outputNeurons[k] = 0;
+		outputNeurons[j] = 0;
 		//get weighted sum of pattern and bias neuron
-		for( int j=0; j <= nHidden[nLayer-1]; j++ ) outputNeurons[k] += hiddenNeurons[nLayer-1][j] * wHiddenOutput[j][k];
+		for( int i=0; i <= nHidden[nLayer-1]; i++ ) outputNeurons[j] += hiddenNeurons[nLayer-1][i] * wHiddenOutput[i][j];
 		//set to result of sigmoid
-		outputNeurons[k] = activationFunction( outputNeurons[k] );
+		outputNeurons[j] = activationFunction( outputNeurons[j] );
 	}
 }
 
