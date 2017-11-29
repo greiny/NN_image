@@ -580,3 +580,31 @@ Linking C executable cmTC_4e306
 make[1]: Leaving directory '/home/unist-escl/Desktop/realtime_image/Training/build/CMakeFiles/CMakeTmp'
 
 
+Determining if the include file pthread.h exists passed with the following output:
+Change Dir: /home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_9136a/fast"
+/usr/bin/make -f CMakeFiles/cmTC_9136a.dir/build.make CMakeFiles/cmTC_9136a.dir/build
+make[1]: Entering directory '/home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9136a.dir/CheckIncludeFile.c.o
+/usr/bin/cc    -fPIC    -o CMakeFiles/cmTC_9136a.dir/CheckIncludeFile.c.o   -c /home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTC_9136a
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9136a.dir/link.txt --verbose=1
+/usr/bin/cc  -fPIC     CMakeFiles/cmTC_9136a.dir/CheckIncludeFile.c.o  -o cmTC_9136a -rdynamic 
+make[1]: Leaving directory '/home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/CMakeTmp'
+
+
+Determining if the function pthread_create exists in the pthread passed with the following output:
+Change Dir: /home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_28786/fast"
+/usr/bin/make -f CMakeFiles/cmTC_28786.dir/build.make CMakeFiles/cmTC_28786.dir/build
+make[1]: Entering directory '/home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_28786.dir/CheckFunctionExists.c.o
+/usr/bin/cc    -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_28786.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.5/Modules/CheckFunctionExists.c
+Linking C executable cmTC_28786
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_28786.dir/link.txt --verbose=1
+/usr/bin/cc  -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_28786.dir/CheckFunctionExists.c.o  -o cmTC_28786 -rdynamic -lpthread 
+make[1]: Leaving directory '/home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/CMakeTmp'
+
+

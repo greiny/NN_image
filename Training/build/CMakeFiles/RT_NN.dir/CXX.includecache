@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/unist-escl/Desktop/realtime_image/Training/src/main_training.cpp
+/home/unist-escl/Desktop/NN_image/Training/src/main_training.cpp
 iostream
 -
 ctime
@@ -16,13 +16,13 @@ sstream
 fstream
 -
 modules/neuralNetwork.h
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetwork.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetwork.h
 modules/neuralNetworkTrainer.h
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetworkTrainer.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetworkTrainer.h
 
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/dataReader.cpp
+/home/unist-escl/Desktop/NN_image/Training/src/modules/dataReader.cpp
 dataReader.h
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/dataReader.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/dataReader.h
 iostream
 -
 fstream
@@ -34,7 +34,7 @@ math.h
 algorithm
 -
 
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/dataReader.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/dataReader.h
 vector
 -
 string
@@ -42,7 +42,7 @@ string
 opencv2/core.hpp
 -
 
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetwork.cpp
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetwork.cpp
 iostream
 -
 vector
@@ -54,13 +54,13 @@ math.h
 string.h
 -
 neuralNetwork.h
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetwork.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetwork.h
 
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetwork.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetwork.h
 dataReader.h
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/dataReader.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/dataReader.h
 
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetworkTrainer.cpp
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetworkTrainer.cpp
 iostream
 -
 fstream
@@ -68,15 +68,15 @@ fstream
 math.h
 -
 neuralNetworkTrainer.h
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetworkTrainer.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetworkTrainer.h
 
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetworkTrainer.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetworkTrainer.h
 fstream
 -
 vector
 -
 neuralNetwork.h
-/home/unist-escl/Desktop/realtime_image/Training/src/modules/neuralNetwork.h
+/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetwork.h
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h

@@ -25,10 +25,11 @@ int main()
 	
 	//Training condition
 	int nInput = 225;
-	int nNeuron = 100;
+	vector<int> nLayer{30,2,1};
 	int nOutput = 1;
+
 	int max_epoch = 1000000;
-	int accuracy = 99;
+	int accuracy = 90;
 	float lr = 0.01;
 	float momentum = 0.9;
 
@@ -38,7 +39,7 @@ int main()
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network
-	neuralNetwork nn(nInput,nNeuron,nOutput);
+	neuralNetwork nn(nInput,nLayer,nOutput);
 
 	//save the Training Condition
 	char file_name[255];
@@ -56,7 +57,8 @@ int main()
 	if ( logTrain.is_open() )
 	{
 		logTrain << "#Input" << "," << nInput << endl;
-		logTrain << "#Neuron" << "," << nNeuron << endl;
+		logTrain << "#Layer" << "," << nLayer.size() << endl;
+		for (int i=0; i<nLayer.size(); i++) logTrain << "#Neuron["<< i << "]," << nLayer[i] << endl;
 		logTrain << "#Output" << "," << nOutput << endl;
 		logTrain << "#TrainingSet" << "," << (int)d.getNumTrainingSets() << endl;
 		logTrain << "Accuracy(%)" << "," << accuracy << endl;
@@ -75,7 +77,7 @@ int main()
 	log_name << "log/log" << file_no << ".csv";
 	const char* log_name_char = new char[log_name.str().length()+1];
 	log_name_char = log_name.str().c_str();
-	nT.enableLogging(log_name_char, 5);
+	nT.enableLogging(log_name_char, 1);
 
 	//train neural network on data sets
 	for (int i=0; i < d.getNumTrainingSets(); i++ )

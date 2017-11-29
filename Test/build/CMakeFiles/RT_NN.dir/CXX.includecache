@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/unist-escl/Desktop/realtime_image/Test/src/main.cpp
+/home/unist-escl/Desktop/NN_image/Test/src/main.cpp
 cmath
 -
 iostream
@@ -32,21 +32,21 @@ ctime
 vector
 -
 opencv2/core.hpp
-/home/unist-escl/Desktop/realtime_image/Test/src/opencv2/core.hpp
+/home/unist-escl/Desktop/NN_image/Test/src/opencv2/core.hpp
 opencv2/core/utility.hpp
 -
 opencv2/highgui.hpp
-/home/unist-escl/Desktop/realtime_image/Test/src/opencv2/highgui.hpp
+/home/unist-escl/Desktop/NN_image/Test/src/opencv2/highgui.hpp
 opencv2/imgproc.hpp
-/home/unist-escl/Desktop/realtime_image/Test/src/opencv2/imgproc.hpp
+/home/unist-escl/Desktop/NN_image/Test/src/opencv2/imgproc.hpp
 opencv2/cudaimgproc.hpp
-/home/unist-escl/Desktop/realtime_image/Test/src/opencv2/cudaimgproc.hpp
+/home/unist-escl/Desktop/NN_image/Test/src/opencv2/cudaimgproc.hpp
 modules/neuralNetwork.h
-/home/unist-escl/Desktop/realtime_image/Test/src/modules/neuralNetwork.h
+/home/unist-escl/Desktop/NN_image/Test/src/modules/neuralNetwork.h
 
-/home/unist-escl/Desktop/realtime_image/Test/src/modules/dataReader.cpp
+/home/unist-escl/Desktop/NN_image/Test/src/modules/dataReader.cpp
 dataReader.h
-/home/unist-escl/Desktop/realtime_image/Test/src/modules/dataReader.h
+/home/unist-escl/Desktop/NN_image/Test/src/modules/dataReader.h
 iostream
 -
 fstream
@@ -58,7 +58,7 @@ math.h
 algorithm
 -
 
-/home/unist-escl/Desktop/realtime_image/Test/src/modules/dataReader.h
+/home/unist-escl/Desktop/NN_image/Test/src/modules/dataReader.h
 vector
 -
 string
@@ -66,7 +66,7 @@ string
 opencv2/core.hpp
 -
 
-/home/unist-escl/Desktop/realtime_image/Test/src/modules/neuralNetwork.cpp
+/home/unist-escl/Desktop/NN_image/Test/src/modules/neuralNetwork.cpp
 iostream
 -
 vector
@@ -78,11 +78,11 @@ math.h
 string.h
 -
 neuralNetwork.h
-/home/unist-escl/Desktop/realtime_image/Test/src/modules/neuralNetwork.h
+/home/unist-escl/Desktop/NN_image/Test/src/modules/neuralNetwork.h
 
-/home/unist-escl/Desktop/realtime_image/Test/src/modules/neuralNetwork.h
+/home/unist-escl/Desktop/NN_image/Test/src/modules/neuralNetwork.h
 dataReader.h
-/home/unist-escl/Desktop/realtime_image/Test/src/modules/dataReader.h
+/home/unist-escl/Desktop/NN_image/Test/src/modules/dataReader.h
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h

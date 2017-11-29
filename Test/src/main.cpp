@@ -37,14 +37,14 @@ int max_thresh = 255;
 int num = 0;
 RNG rng(12345);
 
-int npattern=64;
-int ntarget=1;
-int nneuron=70;
+//Training condition
+int nPattern = 64;
+vector<int> nLayer {70};
+int nTarget = 1;
 
 dataReader dR;
-neuralNetwork nn(npattern,nneuron,ntarget);
-float neural_thres = 0.9;
-
+neuralNetwork nn(nPattern,nLayer,nTarget);
+float neural_thres = 0.95; // this is for threshold to determine if x is true or false
 VideoCapture capture(0);
 //VideoWriter video("out.avi",CV_FOURCC('M','J','P','G'),10, Size(INPUT_WIDTH,INPUT_HEIGHT),true);
 //ofstream logfile("log.csv");
@@ -57,7 +57,7 @@ int main(int argc, const char* argv[])
 
 	//open file for maxmin value
 	char* maxmin_file = "log/maxmin.csv";
-	dR.maxmin("log/maxmin.csv", npattern);
+	dR.maxmin("log/maxmin.csv", nPattern);
 
     if( capture.isOpened() )
     {
@@ -95,28 +95,16 @@ void main_ellipse ()
 		else
 		{
 			Mat src,dst_cpu,mask,dst_gpu;
-			Rect half(0, 0, frame.cols/2, frame.rows);
-			frame = frame(half);
+			//Rect half(0, 0, frame.cols/2, frame.rows);
+			//frame = frame(half);
 			resize(frame,frame,Size(), 0.5, 0.5);
 			//cout<< "Resolution = " << frame.cols << " x " << frame.rows << endl;
-			//336x188
 			cv::cvtColor(frame, src, COLOR_BGR2GRAY);
 			//frame.release();
 			GaussianBlur( src, src, ksize, sigma1, sigma2 );
 			Canny(src, mask, 100, 200, 3);
 			cv::cvtColor(mask, dst_gpu, COLOR_GRAY2BGR);
-/*
-			GpuMat gpu_frame(frame);
-			GpuMat gpu_src, gpu_mask, gpu_dst;
-			frame.release();
-			cuda::cvtColor(gpu_frame, gpu_src, COLOR_BGR2GRAY);
-			Ptr<cuda::CannyEdgeDetector> canny = cuda::createCannyEdgeDetector(thresh, thresh*2, 3);
-			canny->detect(gpu_src, gpu_mask);
-			Mat mask(gpu_mask);
-			cuda::cvtColor(gpu_mask, gpu_dst, COLOR_GRAY2BGR);
-			Mat dst_gpu(gpu_dst);
 
-*/
 			findContours(mask, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
 			/// Get the moments and mass centers:
@@ -200,7 +188,7 @@ void main_ellipse ()
 								auto start = std::chrono::high_resolution_clock::now();
 								double time;
 
-								dR.loadMat4Test(crop,npattern,ntarget);
+								dR.loadMat4Test(crop,nPattern,nTarget);
 								trainingDataSet *testSet = dR.getTrainingDataSet();
 								double *val[(int) testSet->validationSet.size()];
 								double *res[(int) testSet->validationSet.size()];
@@ -210,13 +198,14 @@ void main_ellipse ()
 									if (res[tp][0] > neural_thres )
 									{
 										cout << "Found!" << endl;
-										rectangle(dst_gpu,roi,Scalar(0,0,255));
-
+										rectangle(frame,roi,Scalar(0,0,255));
+										/*
 										Mat crop2 = frame(roi);
 										std::ostringstream name;
 										name << "data/neural#" << num_o << ".png";
 										imwrite(name.str(), crop2);
 										num_o++;
+										*/
 									}
 								}
 								auto end = std::chrono::high_resolution_clock::now();
@@ -271,7 +260,7 @@ void main_ellipse ()
 									auto start = std::chrono::high_resolution_clock::now();
 									double time;
 
-									dR.loadMat4Test(crop,npattern,ntarget);
+									dR.loadMat4Test(crop,nPattern,nTarget);
 									trainingDataSet *testSet = dR.getTrainingDataSet();
 									double *val[(int) testSet->validationSet.size()];
 									double *res[(int) testSet->validationSet.size()];
@@ -281,12 +270,14 @@ void main_ellipse ()
 										if (res[tp][0] > neural_thres )
 										{
 											cout << "Found!" << endl;
-											rectangle(dst_gpu,roi,Scalar(0,0,255));
+											rectangle(frame,roi,Scalar(0,0,255));
+											/*
 											Mat crop2 = frame(roi);
 											std::ostringstream name;
 											name << "data/neural#" << num_o << ".png";
 											imwrite(name.str(), crop2);
 											num_o++;
+											*/
 										}
 									}
 									auto end = std::chrono::high_resolution_clock::now();
@@ -298,7 +289,7 @@ void main_ellipse ()
 					}
 				}
 			}
-			frame.release();
+
 			//check for FPS(Frame Per Second)
 			auto t1 = std::chrono::high_resolution_clock::now();
 			time += std::chrono::duration<float>(t1-t0).count();
@@ -319,12 +310,13 @@ void main_ellipse ()
 
 			std::ostringstream ssgpu;
 			ssgpu << "FPS = " << fps;
-			putText(dst_gpu, ssgpu.str(), Point(10,30), FONT_HERSHEY_SIMPLEX,0.8, Scalar(0, 255, 255), 2);
+			putText(frame, ssgpu.str(), Point(10,30), FONT_HERSHEY_SIMPLEX,0.8, Scalar(0, 255, 255), 2);
 			//video << buf;
 
 			/// Show in a window
 			namedWindow( "Targets", 0 );
-			imshow( "Targets", dst_gpu );
+			imshow( "Targets", frame );
+			frame.release();
 			flag = 1;
 			if(waitKey(10)==27)  break;
 

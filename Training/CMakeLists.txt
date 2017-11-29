@@ -45,7 +45,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 link_directories(${OpenCV_LIBRARY_DIRS})
 link_directories(${CUDA_LIBRARY_DIRS})
 
-
 SET(SRC_FOLDER src)
 FILE(GLOB_RECURSE SRC_FILES "${SRC_FOLDER}/*.cpp")
 
@@ -55,6 +54,6 @@ add_definitions(-std=c++0x -g -O3)
 TARGET_LINK_LIBRARIES(${execName}
                         ${SPECIAL_OS_LIBS}
                         ${OpenCV_LIBRARIES}
-			${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_npp_LIBRARY}
+			${CUDA_CUDA_LIBRARY}
                     )
 

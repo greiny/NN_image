@@ -1,4 +1,4 @@
-# Install script for directory: /home/unist-escl/Desktop/realtime_image/Training
+# Install script for directory: /home/unist-escl/Desktop/NN_image/Training
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/unist-escl/Desktop/realtime_image/Training/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/unist-escl/Desktop/NN_image/Training/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

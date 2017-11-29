@@ -21,18 +21,20 @@ class neuralNetwork
 private:
 
 	//number of neurons
-	int nInput, nHidden, nOutput;
-	
+	int nInput;
+	int nOutput;
+	int nLayer;
+	vector<int> nHidden;
+
 	//neurons
 	double* inputNeurons;
-	double* hiddenNeurons;
+	vector<double*> hiddenNeurons;
 	double* outputNeurons;
 
 	//weights
-	vector <double>** wLayer;
+	vector <double**> wHiddenHidden; // 3D-pointer [#layer][#prev_neuron][#next_neuron]
 	double** wInputHidden;
 	double** wHiddenOutput;
-		
 	//Friends
 	//--------------------------------------------------------------------------------------------
 	friend neuralNetworkTrainer;
@@ -43,16 +45,16 @@ private:
 public:
 
 	//constructor & destructor
-	neuralNetwork(int numInput, int numHidden, int numOutput);
+	neuralNetwork(int numInput, vector<int> numHidden, int numOutput);
 	~neuralNetwork();
 
 	//weight operations
-	bool loadWeights(char* inputFilename);
-	bool saveWeights(char* outputFilename);
+	bool loadWeights(const char* inputFilename);
+	bool saveWeights(const char* outputFilename);
 	double* feedForwardPattern( double* pattern );
 	double getSetAccuracy( std::vector<dataEntry*>& set );
 	double getSetMSE( std::vector<dataEntry*>& set );
-	inline int clampOutput( double x );
+	int clampOutput( double x );
 
 	//private methods
 	//--------------------------------------------------------------------------------------------

@@ -54,6 +54,6 @@ add_definitions(-std=c++0x -g -O3)
 TARGET_LINK_LIBRARIES(${execName}
                         ${SPECIAL_OS_LIBS}
                         ${OpenCV_LIBRARIES}
-			${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_npp_LIBRARY}
+			${CUDA_CUDA_LIBRARY}
                     )
 
