@@ -6,9 +6,14 @@
 #include <string.h>
 
 //include definition file
+#include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/cudaimgproc.hpp"
+
 #include "neuralNetwork.h"
 
 using namespace std;
+using namespace cv;
 
 /*******************************************************************
 * Constructor
@@ -40,13 +45,6 @@ neuralNetwork::neuralNetwork(int nInput, vector<int> nHidden, int nOutput) : nIn
 		for ( int j=0; j < nHidden[0]; j++ ) wInputHidden[i][j] = 0;
 	}
 
-	wHiddenOutput = new( double*[nHidden[nLayer-1] + 1] );
-	for ( int i=0; i <= nHidden[nLayer-1]; i++ )
-	{
-		wHiddenOutput[i] = new (double[nOutput]);
-		for ( int j=0; j < nOutput; j++ ) wHiddenOutput[i][j] = 0;
-	}
-
 	if (nLayer>1)
 	{
 		for (int k=0; k<nLayer-1; k++)
@@ -54,14 +52,20 @@ neuralNetwork::neuralNetwork(int nInput, vector<int> nHidden, int nOutput) : nIn
 			wHiddenHidden.push_back(new( double*[nHidden[k] + 1])); // hidden(k)-hidden(k+1)
 			for ( int i=0; i <= nHidden[k]; i++ )
 			{
-				wHiddenHidden[k][i] = new (double[nHidden[k]]);
+				wHiddenHidden[k][i] = new (double[nHidden[k+1]]);
 				for ( int j=0; j < nHidden[k+1]; j++ ) wHiddenHidden[k][i][j] = 0;
 			}
 		}
 	}
+	wHiddenOutput = new( double*[nHidden[nLayer-1] + 1] );
+	for ( int i=0; i <= nHidden[nLayer-1]; i++ )
+	{
+		wHiddenOutput[i] = new (double[nOutput]);
+		for ( int j=0; j < nOutput; j++ ) wHiddenOutput[i][j] = 0;
+	}
 	//initialize weights
 	//--------------------------------------------------------------------------------------------------------
-	initializeWeights();			
+	initializeWeights();
 }
 
 /*******************************************************************
@@ -354,10 +358,12 @@ int neuralNetwork::clampOutput( double x )
 /*******************************************************************
 * Feed Forward Operation
 ********************************************************************/
+
 void neuralNetwork::feedForward(double* pattern)
 {
 	//set input neurons to input values
 	for(int i = 0; i < nInput; i++) inputNeurons[i] = pattern[i];
+
 	for(int j=0; j < nHidden[0]; j++)
 	{
 		//clear value
@@ -366,7 +372,6 @@ void neuralNetwork::feedForward(double* pattern)
 		for( int i=0; i <= nInput; i++ ) hiddenNeurons[0][j] += inputNeurons[i] * wInputHidden[i][j];
 		//set to result of sigmoid
 		hiddenNeurons[0][j] = activationFunction( hiddenNeurons[0][j] );
-		cout << "0000 = " << hiddenNeurons[0][j] << endl;
 	}
 
 	if (nLayer>1)

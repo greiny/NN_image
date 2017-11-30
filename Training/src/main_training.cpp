@@ -25,7 +25,7 @@ int main()
 	
 	//Training condition
 	int nInput = 225;
-	vector<int> nLayer{30,2,1};
+	vector<int> nLayer{20,10,30,5};
 	int nOutput = 1;
 
 	int max_epoch = 1000000;

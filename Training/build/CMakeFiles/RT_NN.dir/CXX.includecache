@@ -53,6 +53,12 @@ math.h
 -
 string.h
 -
+opencv2/core.hpp
+/home/unist-escl/Desktop/NN_image/Training/src/modules/opencv2/core.hpp
+opencv2/imgproc.hpp
+/home/unist-escl/Desktop/NN_image/Training/src/modules/opencv2/imgproc.hpp
+opencv2/cudaimgproc.hpp
+/home/unist-escl/Desktop/NN_image/Training/src/modules/opencv2/cudaimgproc.hpp
 neuralNetwork.h
 /home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetwork.h
 

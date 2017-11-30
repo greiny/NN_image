@@ -34,13 +34,6 @@ neuralNetworkTrainer::neuralNetworkTrainer( neuralNetwork *nn )	:	NN(nn),
 		for ( int j=0; j < NN->nHidden[0]; j++ ) deltaInputHidden[i][j] = 0;
 	}
 
-	deltaHiddenOutput = new( double*[NN->nHidden[NN->nLayer-1] + 1] ); // +1 means bias neuron
-	for ( int i=0; i <= NN->nHidden[NN->nLayer-1]; i++ )
-	{
-		deltaHiddenOutput[i] = new (double[NN->nOutput]);			
-		for ( int j=0; j < NN->nOutput; j++ ) deltaHiddenOutput[i][j] = 0;		
-	}
-
 	if (NN->nLayer>1)
 	{
 		for (int k=0; k<(NN->nLayer-1); k++)
@@ -48,10 +41,17 @@ neuralNetworkTrainer::neuralNetworkTrainer( neuralNetwork *nn )	:	NN(nn),
 			deltaHiddenHidden.push_back(new( double*[NN->nHidden[k]+1])); // hidden(k)-hidden(k+1)
 			for ( int i=0; i <= NN->nHidden[k]; i++ )
 			{
-				deltaHiddenHidden[k][i] = new (double[NN->nHidden[k]]);
+				deltaHiddenHidden[k][i] = new (double[NN->nHidden[k+1]]);
 				for ( int j=0; j < NN->nHidden[k+1]; j++ ) deltaHiddenHidden[k][i][j] = 0;
 			}
 		}
+	}
+
+	deltaHiddenOutput = new( double*[NN->nHidden[NN->nLayer-1] + 1] ); // +1 means bias neuron
+	for ( int i=0; i <= NN->nHidden[NN->nLayer-1]; i++ )
+	{
+		deltaHiddenOutput[i] = new (double[NN->nOutput]);
+		for ( int j=0; j < NN->nOutput; j++ ) deltaHiddenOutput[i][j] = 0;
 	}
 
 	//create error gradient storage
@@ -267,7 +267,7 @@ void neuralNetworkTrainer::backpropagate( double* desiredOutputs )
 			for (int j = 0; j < NN->nHidden[k+1]; j++)
 			{
 				//get error gradient for every hidden node
-				hiddenErrorGradients[1][j] = getHiddenErrorGradient(1,j);
+				hiddenErrorGradients[k+1][j] = getHiddenErrorGradient(k+1,j);
 				//for all nodes in input layer and bias neuron
 				for (int i = 0; i <= NN->nHidden[k]; i++)
 				{
