@@ -238,6 +238,7 @@ void neuralNetworkTrainer::runTrainingEpoch( vector<dataEntry*> trainingSet )
 	//update training accuracy and MSE
 	trainingSetAccuracy = 100 - (incorrectPatterns/trainingSet.size() * 100);
 	trainingSetMSE = mse / ( NN->nOutput * trainingSet.size() );
+	NN->getRegression(trainingSet,0);
 }
 /*******************************************************************
 * Propagate errors back through NN and calculate delta values
