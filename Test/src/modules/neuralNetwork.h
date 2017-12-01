@@ -53,6 +53,7 @@ public:
 	bool saveWeights(const char* outputFilename);
 	double* feedForwardPattern( double* pattern );
 	double getSetAccuracy( std::vector<dataEntry*>& set );
+	void getRegression( std::vector<dataEntry*>& set, int i );
 	double getSetMSE( std::vector<dataEntry*>& set );
 	int clampOutput( double x );
 

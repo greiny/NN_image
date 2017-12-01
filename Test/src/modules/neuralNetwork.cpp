@@ -5,10 +5,10 @@
 #include <math.h>
 #include <string.h>
 
-//include definition file
 #include "neuralNetwork.h"
 
 using namespace std;
+using namespace cv;
 
 /*******************************************************************
 * Constructor
@@ -40,13 +40,6 @@ neuralNetwork::neuralNetwork(int nInput, vector<int> nHidden, int nOutput) : nIn
 		for ( int j=0; j < nHidden[0]; j++ ) wInputHidden[i][j] = 0;
 	}
 
-	wHiddenOutput = new( double*[nHidden[nLayer-1] + 1] );
-	for ( int i=0; i <= nHidden[nLayer-1]; i++ )
-	{
-		wHiddenOutput[i] = new (double[nOutput]);
-		for ( int j=0; j < nOutput; j++ ) wHiddenOutput[i][j] = 0;
-	}
-
 	if (nLayer>1)
 	{
 		for (int k=0; k<nLayer-1; k++)
@@ -54,14 +47,20 @@ neuralNetwork::neuralNetwork(int nInput, vector<int> nHidden, int nOutput) : nIn
 			wHiddenHidden.push_back(new( double*[nHidden[k] + 1])); // hidden(k)-hidden(k+1)
 			for ( int i=0; i <= nHidden[k]; i++ )
 			{
-				wHiddenHidden[k][i] = new (double[nHidden[k]]);
+				wHiddenHidden[k][i] = new (double[nHidden[k+1]]);
 				for ( int j=0; j < nHidden[k+1]; j++ ) wHiddenHidden[k][i][j] = 0;
 			}
 		}
 	}
+	wHiddenOutput = new( double*[nHidden[nLayer-1] + 1] );
+	for ( int i=0; i <= nHidden[nLayer-1]; i++ )
+	{
+		wHiddenOutput[i] = new (double[nOutput]);
+		for ( int j=0; j < nOutput; j++ ) wHiddenOutput[i][j] = 0;
+	}
 	//initialize weights
 	//--------------------------------------------------------------------------------------------------------
-	initializeWeights();			
+	initializeWeights();
 }
 
 /*******************************************************************
@@ -264,7 +263,6 @@ double neuralNetwork::getSetAccuracy( std::vector<dataEntry*>& set )
 			//set flag to false if desired and output differ
 			if ( clampOutput(outputNeurons[k]) != set[tp]->target[k] ) correctResult = false;
 		}
-		
 		//inc training error for a incorrect result
 		if ( !correctResult ) incorrectResults++;	
 		
@@ -272,6 +270,35 @@ double neuralNetwork::getSetAccuracy( std::vector<dataEntry*>& set )
 	
 	//calculate error and return as percentage
 	return 100 - (incorrectResults/set.size() * 100);
+}
+
+/*******************************************************************
+* Return the NN target and output
+********************************************************************/
+
+void neuralNetwork::getRegression( std::vector<dataEntry*>& set , int i)
+{
+	ofstream logReg;
+	if (i==0) logReg.open("log/logReg_TrainingtSet.csv",ios::out);
+	if (i==1) logReg.open("log/logReg_GeneralSet.csv",ios::out);
+	if (i==2) logReg.open("log/logReg_TestSet.csv",ios::out);
+	if ( logReg.is_open() )
+	{
+		logReg << "Output" << "," << "Target" << endl;
+
+		//for every training input array
+		for ( int tp = 0; tp < (int) set.size(); tp++)
+		{
+			//feed inputs through network and backpropagate errors
+			feedForward( set[tp]->pattern );
+			//check all outputs against desired output values
+			for ( int k = 0; k < nOutput; k++ )
+			{
+				logReg << outputNeurons[k] << "," << set[tp]->target[k]<< endl;
+			}
+		}//end for
+	}
+	logReg.close();
 }
 
 /*******************************************************************
@@ -330,7 +357,7 @@ void neuralNetwork::initializeWeights()
 
 	for(int i = 0; i <= nHidden[nLayer-1]; i++)
 	{
-		for(int j = 0; j < nOutput; j++) wHiddenOutput[i][j] = ( ( (double)(rand()%100)+1)/100 * 2 * rO[0] ) - rO[0];
+		for(int j = 0; j < nOutput; j++) wHiddenOutput[i][j] = ( ( (double)(rand()%100)+1)/100 * 2 * rO[nLayer-1] ) - rO[nLayer-1];
 	}
 
 }
@@ -354,10 +381,12 @@ int neuralNetwork::clampOutput( double x )
 /*******************************************************************
 * Feed Forward Operation
 ********************************************************************/
+
 void neuralNetwork::feedForward(double* pattern)
 {
 	//set input neurons to input values
 	for(int i = 0; i < nInput; i++) inputNeurons[i] = pattern[i];
+
 	for(int j=0; j < nHidden[0]; j++)
 	{
 		//clear value
@@ -366,7 +395,6 @@ void neuralNetwork::feedForward(double* pattern)
 		for( int i=0; i <= nInput; i++ ) hiddenNeurons[0][j] += inputNeurons[i] * wInputHidden[i][j];
 		//set to result of sigmoid
 		hiddenNeurons[0][j] = activationFunction( hiddenNeurons[0][j] );
-		cout << "0000 = " << hiddenNeurons[0][j] << endl;
 	}
 
 	if (nLayer>1)

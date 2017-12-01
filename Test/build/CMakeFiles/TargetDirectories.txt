@@ -1,3 +1,0 @@
-/home/unist-escl/Desktop/NN_image/Test/build/CMakeFiles/edit_cache.dir
-/home/unist-escl/Desktop/NN_image/Test/build/CMakeFiles/rebuild_cache.dir
-/home/unist-escl/Desktop/NN_image/Test/build/CMakeFiles/RT_NN.dir
