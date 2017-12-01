@@ -25,17 +25,17 @@ int main()
 	
 	//Training condition
 	int nInput = 225;
-	vector<int> nLayer{20,10,30,5};
+	vector<int> nLayer{40};
 	int nOutput = 1;
 
 	int max_epoch = 1000000;
-	int accuracy = 90;
+	int accuracy = 95;
 	float lr = 0.01;
 	float momentum = 0.9;
 
 	//create data set reader and load data file
 	dataReader d;
-	d.loadDataFile4Train("image_data/imgdata.csv",nInput,nOutput,0.6,0.3);
+	d.loadDataFile4Train("image_data/imgdata.csv",nInput,nOutput,0.6,0.4);
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network

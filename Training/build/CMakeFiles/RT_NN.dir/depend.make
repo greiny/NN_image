@@ -38,17 +38,6 @@ CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/core/types.
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/core/types_c.h
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/core/utility.hpp
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/core/version.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/core/vsx_utils.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudaarithm.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudabgsegm.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudacodec.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudafeatures2d.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudafilters.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudaimgproc.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudaobjdetect.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudaoptflow.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudastereo.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/cudawarping.hpp
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/features2d.hpp
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/flann.hpp
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/flann/all_indices.h
@@ -137,9 +126,6 @@ CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/videostab/o
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/videostab/ring_buffer.hpp
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/videostab/stabilizer.hpp
 CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/videostab/wobble_suppression.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/xfeatures2d.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/xfeatures2d/cuda.hpp
-CMakeFiles/RT_NN.dir/src/main_training.o: /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
 
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: ../src/modules/dataReader.cpp
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: ../src/modules/dataReader.h
@@ -176,17 +162,6 @@ CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/core/t
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/core/types_c.h
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/core/utility.hpp
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/core/version.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/core/vsx_utils.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudaarithm.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudabgsegm.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudacodec.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudafeatures2d.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudafilters.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudaimgproc.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudaobjdetect.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudaoptflow.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudastereo.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/cudawarping.hpp
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/features2d.hpp
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/flann.hpp
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/flann/all_indices.h
@@ -275,9 +250,6 @@ CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/videos
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/videostab/ring_buffer.hpp
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/videostab/stabilizer.hpp
 CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/videostab/wobble_suppression.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/xfeatures2d.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/xfeatures2d/cuda.hpp
-CMakeFiles/RT_NN.dir/src/modules/dataReader.o: /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
 
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: ../src/modules/dataReader.h
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: ../src/modules/neuralNetwork.cpp
@@ -315,17 +287,6 @@ CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cor
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/core/types_c.h
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/core/utility.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/core/version.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/core/vsx_utils.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudaarithm.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudabgsegm.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudacodec.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudafeatures2d.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudafilters.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudaimgproc.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudaobjdetect.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudaoptflow.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudastereo.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/cudawarping.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/features2d.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/flann.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/flann/all_indices.h
@@ -414,9 +375,6 @@ CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/vid
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/videostab/ring_buffer.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/videostab/stabilizer.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/videostab/wobble_suppression.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/xfeatures2d.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/xfeatures2d/cuda.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o: /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
 
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: ../src/modules/dataReader.h
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: ../src/modules/neuralNetwork.h
@@ -455,17 +413,6 @@ CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/open
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/core/types_c.h
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/core/utility.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/core/version.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/core/vsx_utils.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudaarithm.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudabgsegm.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudacodec.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudafeatures2d.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudafilters.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudaimgproc.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudaobjdetect.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudaoptflow.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudastereo.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/cudawarping.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/features2d.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/flann.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/flann/all_indices.h
@@ -554,7 +501,4 @@ CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/open
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/videostab/ring_buffer.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/videostab/stabilizer.hpp
 CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/videostab/wobble_suppression.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/xfeatures2d.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/xfeatures2d/cuda.hpp
-CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o: /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
 

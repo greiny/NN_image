@@ -163,10 +163,12 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 		//get generalization set accuracy and MSE
 		generalizationSetAccuracy = NN->getSetAccuracy( tSet->generalizationSet );
 		generalizationSetMSE = NN->getSetMSE( tSet->generalizationSet );
+		NN->getRegression( tSet->generalizationSet,1 );
 
 		//get validation set accuracy and MSE
 		validationSetAccuracy = NN->getSetAccuracy(tSet->validationSet);
 		validationSetMSE = NN->getSetMSE(tSet->validationSet);
+		NN->getRegression( tSet->validationSet,2 );
 
 		//Log Training results
 		if ( loggingEnabled && logFile.is_open() && ( epoch - lastEpochLogged == logResolution ) ) 

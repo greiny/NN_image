@@ -4,21 +4,15 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/unist-escl/Desktop/NN_image/Training/src/main_training.cpp" "/home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/RT_NN.dir/src/main_training.o"
-  "/home/unist-escl/Desktop/NN_image/Training/src/modules/dataReader.cpp" "/home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/RT_NN.dir/src/modules/dataReader.o"
-  "/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetwork.cpp" "/home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o"
-  "/home/unist-escl/Desktop/NN_image/Training/src/modules/neuralNetworkTrainer.cpp" "/home/unist-escl/Desktop/NN_image/Training/build/CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o"
+  "/home/soyoon/Desktop/NN_image/Training/src/main_training.cpp" "/home/soyoon/Desktop/NN_image/Training/build/CMakeFiles/RT_NN.dir/src/main_training.o"
+  "/home/soyoon/Desktop/NN_image/Training/src/modules/dataReader.cpp" "/home/soyoon/Desktop/NN_image/Training/build/CMakeFiles/RT_NN.dir/src/modules/dataReader.o"
+  "/home/soyoon/Desktop/NN_image/Training/src/modules/neuralNetwork.cpp" "/home/soyoon/Desktop/NN_image/Training/build/CMakeFiles/RT_NN.dir/src/modules/neuralNetwork.o"
+  "/home/soyoon/Desktop/NN_image/Training/src/modules/neuralNetworkTrainer.cpp" "/home/soyoon/Desktop/NN_image/Training/build/CMakeFiles/RT_NN.dir/src/modules/neuralNetworkTrainer.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
-# Preprocessor definitions for this target.
-set(CMAKE_TARGET_DEFINITIONS_CXX
-  "OPENCV_TRAITS_ENABLE_DEPRECATED"
-  )
-
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/usr/local/cuda/include"
   "../include"
   "/usr/local/include"
   "/usr/local/include/opencv"

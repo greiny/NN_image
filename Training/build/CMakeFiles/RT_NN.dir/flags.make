@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_FLAGS =   -Wno-format-extra-args -std=c++0x -g -O3
 
-CXX_DEFINES = -DOPENCV_TRAITS_ENABLE_DEPRECATED
+CXX_DEFINES = 
 
-CXX_INCLUDES = -I/usr/local/cuda/include -I/home/unist-escl/Desktop/NN_image/Training/include -isystem /usr/local/include -isystem /usr/local/include/opencv 
+CXX_INCLUDES = -I/home/soyoon/Desktop/NN_image/Training/include -isystem /usr/local/include -isystem /usr/local/include/opencv 
 

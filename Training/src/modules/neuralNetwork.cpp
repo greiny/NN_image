@@ -5,11 +5,6 @@
 #include <math.h>
 #include <string.h>
 
-//include definition file
-#include "opencv2/core.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/cudaimgproc.hpp"
-
 #include "neuralNetwork.h"
 
 using namespace std;
@@ -268,7 +263,6 @@ double neuralNetwork::getSetAccuracy( std::vector<dataEntry*>& set )
 			//set flag to false if desired and output differ
 			if ( clampOutput(outputNeurons[k]) != set[tp]->target[k] ) correctResult = false;
 		}
-		
 		//inc training error for a incorrect result
 		if ( !correctResult ) incorrectResults++;	
 		
@@ -276,6 +270,35 @@ double neuralNetwork::getSetAccuracy( std::vector<dataEntry*>& set )
 	
 	//calculate error and return as percentage
 	return 100 - (incorrectResults/set.size() * 100);
+}
+
+/*******************************************************************
+* Return the NN target and output
+********************************************************************/
+
+void neuralNetwork::getRegression( std::vector<dataEntry*>& set , int i)
+{
+	ofstream logReg;
+	if (i==0) logReg.open("log/logReg_TrainingtSet.csv",ios::out);
+	if (i==1) logReg.open("log/logReg_GeneralSet.csv",ios::out);
+	if (i==2) logReg.open("log/logReg_TestSet.csv",ios::out);
+	if ( logReg.is_open() )
+	{
+		logReg << "Output" << "," << "Target" << endl;
+
+		//for every training input array
+		for ( int tp = 0; tp < (int) set.size(); tp++)
+		{
+			//feed inputs through network and backpropagate errors
+			feedForward( set[tp]->pattern );
+			//check all outputs against desired output values
+			for ( int k = 0; k < nOutput; k++ )
+			{
+				logReg << outputNeurons[k] << "," << set[tp]->target[k]<< endl;
+			}
+		}//end for
+	}
+	logReg.close();
 }
 
 /*******************************************************************
@@ -334,7 +357,7 @@ void neuralNetwork::initializeWeights()
 
 	for(int i = 0; i <= nHidden[nLayer-1]; i++)
 	{
-		for(int j = 0; j < nOutput; j++) wHiddenOutput[i][j] = ( ( (double)(rand()%100)+1)/100 * 2 * rO[0] ) - rO[0];
+		for(int j = 0; j < nOutput; j++) wHiddenOutput[i][j] = ( ( (double)(rand()%100)+1)/100 * 2 * rO[nLayer-1] ) - rO[nLayer-1];
 	}
 
 }
