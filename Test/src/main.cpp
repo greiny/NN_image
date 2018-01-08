@@ -16,14 +16,15 @@
 #include <opencv2/core/utility.hpp>
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
-#include "opencv2/cudaimgproc.hpp"
+#include <librealsense/rs.hpp>
 
 //custom includes
 #include "modules/neuralNetwork.h"
+#include "modules/DisplayManyImages.h"
 
 using namespace std;
 using namespace cv;
-using namespace cv::cuda;
+using namespace rs;
 
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
 #define _USE_MATH_DEFINES
@@ -31,11 +32,9 @@ using namespace cv::cuda;
 
 void main_ellipse ();
 
-int sliderPos = 70; //70
-int thresh = 150;//100;
-int max_thresh = 255;
-int num = 0;
-RNG rng(12345);
+int const INPUT_WIDTH      = 640;
+int const INPUT_HEIGHT     = 480;
+int const FRAMERATE        = 60;
 
 //Training condition
 int nPattern = 64;
@@ -45,7 +44,6 @@ int nTarget = 1;
 dataReader dR;
 neuralNetwork nn(nPattern,nLayer,nTarget);
 float neural_thres = 0.95; // this is for threshold to determine if x is true or false
-VideoCapture capture(0);
 //VideoWriter video("out.avi",CV_FOURCC('M','J','P','G'),10, Size(INPUT_WIDTH,INPUT_HEIGHT),true);
 //ofstream logfile("log.csv");
 
@@ -59,17 +57,28 @@ int main(int argc, const char* argv[])
 	char* maxmin_file = "log/maxmin.csv";
 	dR.maxmin("log/maxmin.csv", nPattern);
 
-    if( capture.isOpened() )
-    {
     	//logfile << "#Contour" << "," << "Data" << endl;
     	main_ellipse();
-    }
-    else cout << "Capture from camera didn't work" << endl;
+
     return 0;
 }
 
 void main_ellipse ()
 {
+	// Detect device 
+	rs::log_to_console(rs::log_severity::warn);
+	rs::context ctx;
+	printf("There are %d connected RealSense devices.\n", ctx.get_device_count());
+	if (ctx.get_device_count() == 0) throw std::runtime_error("No device detected. Is it plugged in?");
+
+	// Get device parameters and Prepare streaming
+	rs::device * dev = ctx.get_device(0);
+	dev->enable_stream(rs::stream::color, INPUT_WIDTH, INPUT_HEIGHT, rs::format::bgr8, FRAMERATE);
+	auto intrin = dev->get_stream_intrinsics(rs::stream::color);
+
+	std::cout << " at " << intrin.width << " x " << intrin.height << endl;
+	dev->start();
+
 	bool flag=1;
 	Mat frame;
 	int num_x = 0;
@@ -89,22 +98,24 @@ void main_ellipse ()
 		double sigma2 = 2;
 		if (flag==1)
 		{
-			capture >> frame;
+			dev->wait_for_frames();
+			frame = Mat(Size(INPUT_WIDTH, INPUT_HEIGHT), CV_8UC3, (void*)dev->get_frame_data(rs::stream::color), Mat::AUTO_STEP);
 			flag = 0;
 		}
 		else
 		{
-			Mat src,dst_cpu,mask,dst_gpu;
-			//Rect half(0, 0, frame.cols/2, frame.rows);
-			//frame = frame(half);
+			Mat src,mask;
 			resize(frame,frame,Size(), 0.5, 0.5);
-			//cout<< "Resolution = " << frame.cols << " x " << frame.rows << endl;
 			cv::cvtColor(frame, src, COLOR_BGR2GRAY);
+			equalizeHist(src, src);
 			//frame.release();
 			GaussianBlur( src, src, ksize, sigma1, sigma2 );
-			Canny(src, mask, 100, 200, 3);
-			cv::cvtColor(mask, dst_gpu, COLOR_GRAY2BGR);
+			Canny(src, mask, 80, 160, 3);
 
+			Mat mask_cp,mask_cp2;
+			mask.copyTo(mask_cp);
+			cv::cvtColor(mask_cp, mask_cp, COLOR_GRAY2BGR);
+			mask_cp.copyTo(mask_cp2);
 			findContours(mask, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
 			/// Get the moments and mass centers:
@@ -148,8 +159,7 @@ void main_ellipse ()
 							  mu[i].mu02*(mu[i].mu30*mu[i].mu12-mu[i].mu21*mu[i].mu21))/pow(mu[i].m00,7);
 						II1=fabs(I1-0.006332);
 
-						if( count < 6 )
-							continue;
+						if( count < 6 ) continue;
 						for (size_t k = 0; k < contours[i].size(); k++)
 						{
 							  error1=((contours[i][k].x-bc.x)*cos(box_angle)+(contours[i][k].y-bc.y)*sin(box_angle))*
@@ -168,25 +178,22 @@ void main_ellipse ()
 							j++;
 							if(error < 0.1f)
 							{
-								if( MAX(box.size.width, box.size.height) > MIN(box.size.width, box.size.height)*30 )
-								  continue;
+								if( MAX(box.size.width, box.size.height) > MIN(box.size.width, box.size.height)*30 ) continue;
 
 								//ellipse(dst_gpu, box, Scalar(0,0,255), 1, LINE_AA);
 								//ellipse(dst_gpu, box.center, box.size*0.5f, box.angle, 0, 360, Scalar(0,255,255), 1, LINE_AA);
 
 								Rect roi=  boundingRect(contours[i]);
+								rectangle(mask_cp,roi,Scalar(0,0,255));
+
 								Mat crop = mask(roi);
 								resize(crop,crop,Size(8,8));
-
+/*
 								Mat crop3 = frame(roi);
 								std::ostringstream name2;
 								name2 << "data/basic#" << num_x << ".png";
 								imwrite(name2.str(), crop3);
-								num_x++;
-
-								//Time check
-								auto start = std::chrono::high_resolution_clock::now();
-								double time;
+								num_x++;*/
 
 								dR.loadMat4Test(crop,nPattern,nTarget);
 								trainingDataSet *testSet = dR.getTrainingDataSet();
@@ -197,8 +204,8 @@ void main_ellipse ()
 									res[tp] = nn.feedForwardPattern(testSet->validationSet[tp]->pattern); // calculation results
 									if (res[tp][0] > neural_thres )
 									{
-										cout << "Found!" << endl;
-										rectangle(frame,roi,Scalar(0,0,255));
+										//cout << "Found!" << endl;
+										rectangle(mask_cp2,roi,Scalar(255,0,0));
 										/*
 										Mat crop2 = frame(roi);
 										std::ostringstream name;
@@ -208,10 +215,6 @@ void main_ellipse ()
 										*/
 									}
 								}
-								auto end = std::chrono::high_resolution_clock::now();
-								time = std::chrono::duration<float>(end-start).count();
-								cout << "Time: " << time*1000 << "ms" << endl;
-
 							}
 						}
 						else
@@ -247,18 +250,17 @@ void main_ellipse ()
 									//ellipse(dst_gpu, h_box.center, h_box.size*0.5f, h_box.angle, 0, 360, Scalar(0,255,0), 1, LINE_AA);
 
 									Rect roi=  boundingRect(contours[i]);
+									rectangle(mask_cp,roi,Scalar(0,0,255));
+									
 									Mat crop = mask(roi);
 									resize(crop,crop,Size(8,8));
-
+/*									
 									Mat crop3 = frame(roi);
 									std::ostringstream name2;
 									name2 << "data/basic#" << num_x << ".png";
 									imwrite(name2.str(), crop3);
 									num_x++;
-
-									//Time check
-									auto start = std::chrono::high_resolution_clock::now();
-									double time;
+*/
 
 									dR.loadMat4Test(crop,nPattern,nTarget);
 									trainingDataSet *testSet = dR.getTrainingDataSet();
@@ -269,8 +271,8 @@ void main_ellipse ()
 										res[tp] = nn.feedForwardPattern(testSet->validationSet[tp]->pattern); // calculation results
 										if (res[tp][0] > neural_thres )
 										{
-											cout << "Found!" << endl;
-											rectangle(frame,roi,Scalar(0,0,255));
+											//cout << "Found!" << endl;
+											rectangle(mask_cp2,roi,Scalar(255,0,0));
 											/*
 											Mat crop2 = frame(roi);
 											std::ostringstream name;
@@ -280,42 +282,49 @@ void main_ellipse ()
 											*/
 										}
 									}
-									auto end = std::chrono::high_resolution_clock::now();
-									time = std::chrono::duration<float>(end-start).count();
-									cout << "Time: " << time*1000 << "ms" << endl;
 								}
 							}
-						}
-					}
-				}
+						}// end of else
+					} // end of if(mu[i].m00 != 0 )
+				} // end of count 
 			}
 
 			//check for FPS(Frame Per Second)
+			auto t11 = std::chrono::high_resolution_clock::now();
+			float count = std::chrono::duration<float>(t11-t0).count();
+			// limit fps
+			if (count < 0.1f) usleep((0.1-count)*1000000);
+
 			auto t1 = std::chrono::high_resolution_clock::now();
 			time += std::chrono::duration<float>(t1-t0).count();
-			float count = std::chrono::duration<float>(t1-t0).count();
 			t0 = t1;
 			++frames;
-			while (count < 0.1f) // limit fps
-			{
-				usleep(1000);
-				count += 0.001;
-			}
-			if (time > 0.5f)
+			if (time > 0.5f) 
 			{
 				fps = frames / time;
 				frames = 0;
 				time = 0;
 			}
 
+			Mat info(Size(frame.cols*3,50),frame.type(),Scalar::all(0));
 			std::ostringstream ssgpu;
-			ssgpu << "FPS = " << fps;
-			putText(frame, ssgpu.str(), Point(10,30), FONT_HERSHEY_SIMPLEX,0.8, Scalar(0, 255, 255), 2);
+			ssgpu << "FPS : " << fps << " Resolution : " << frame.cols << " x " << frame.rows;
+			putText(info, ssgpu.str(), Point(30,30), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 2);
+			putText(frame, "Original", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255, 255), 2);			
+			putText(mask_cp, "w/ Neural", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 2);
+			putText(mask_cp2, "w/o Neural", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 2);
 			//video << buf;
 
-			/// Show in a window
-			namedWindow( "Targets", 0 );
-			imshow( "Targets", frame );
+			Mat matDst(Size(frame.cols*3,frame.rows),frame.type(),Scalar::all(0));
+			hconcat(frame, mask_cp, matDst);
+			hconcat(matDst, mask_cp2, matDst);
+			vconcat(info, matDst, matDst);
+
+			//ShowManyImages("Images", 3, frame, mask_cp, mask_cp2);
+
+			// Show in a window
+			//namedWindow( "Targets", 0 );
+			imshow( "Targets", matDst );
 			frame.release();
 			flag = 1;
 			if(waitKey(10)==27)  break;
