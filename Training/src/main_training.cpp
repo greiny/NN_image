@@ -24,18 +24,18 @@ int main()
 	srand( (unsigned int) time(0) );
 	
 	//Training condition
-	int nInput = 225;
-	vector<int> nLayer{40};
+	int nInput = 28*28;
+	vector<int> nLayer{250};
 	int nOutput = 1;
 
 	int max_epoch = 1000000;
-	int accuracy = 95;
-	float lr = 0.01;
+	int accuracy = 97;
+	float lr = 0.001;
 	float momentum = 0.9;
 
 	//create data set reader and load data file
 	dataReader d;
-	d.loadDataFile4Train("image_data/imgdata.csv",nInput,nOutput,0.6,0.4);
+	d.loadDataFile4Train("image_data/imgdata_hsv.csv",nInput,nOutput,0.7,0.3);
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network

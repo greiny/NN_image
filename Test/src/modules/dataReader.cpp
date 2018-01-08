@@ -139,7 +139,6 @@ void dataReader::loadMat4Test(const Mat frame, int nI, int nT)
 			data[j]->pattern[i]=(double)((data[j]->pattern[i]-ref[i]->p_min)/diff)*ratio;
 		}
 	}
-
 	//validation set
 	trainingDataEndIndex = (int)0;
 	for ( int i = 0; i < (int) data.size(); i++ ) tSet.validationSet.push_back( data[i] );
@@ -150,7 +149,7 @@ bool dataReader::maxmin( const char* filename, int nI)
 {
 		//open file for maxmin value
 		fstream maxminFile;
-		maxminFile.open("log/maxmin.csv", ios::in);
+		maxminFile.open(filename, ios::in);
 
 		if ( maxminFile.is_open() )
 		{

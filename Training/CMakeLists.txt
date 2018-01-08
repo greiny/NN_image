@@ -24,7 +24,7 @@ ELSE() # Linux
     endif()
 
     add_definitions(-Wno-format-extra-args)
-    SET(SPECIAL_OS_LIBS "pthread" "X11" "realsense")
+    SET(SPECIAL_OS_LIBS "pthread" "X11")
 ENDIF(WIN32)
 
 find_package(OpenCV REQUIRED)
