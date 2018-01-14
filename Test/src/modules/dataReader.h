@@ -88,7 +88,12 @@ private:
 	std::vector<reference*> ref;
 	int nInputs;
 	int nTargets;
-	double ratio = 10.0;
+	int sImage;
+	int sKernel;
+	int nKernel;
+	int pdim;
+
+	std::vector <double**> Kernels;
 
 	//current data set
 	trainingDataSet tSet;
@@ -111,12 +116,16 @@ public:
 
 	dataReader(): creationApproach(NONE), numTrainingSets(-1) {}
 	~dataReader();
-	bool loadDataFile4Train( const char* filename, int nI, int nT, float gratio, float tratio );
-	bool loadDataFile4Test( const char* filename, int nI, int nT);
-	void loadMat4Test( const cv::Mat frame, int nI, int nT);
-	bool maxmin( const char* filename, int nI);
+	bool loadDataFile4Train( const char* filename, int nI, int nT, float gratio, float tratio ); //maxmin->normalization
+	bool loadImageFile4Train( const char* filename, int nI, int nT, float gratio, float tratio, int , int, int ); //normalization->convolution and pooling->ReLU
+	void loadImage4Test( const cv::Mat frame,int,int); //normalization->convolution and pooling->ReLU
+	bool maxmin( const char* filename);
 	void setCreationApproach( int approach, double param1 = -1, double param2 = -1 );
-	int getNumTrainingSets();	
+	int getNumTrainingSets();
+	cv::Mat Pooling(const cv::Mat &, int , int , int );
+	double* ConvNPooling(double *pattern,int , int , int,int);
+	double* ConvNPooling(cv::Mat pattern, int , int, int);
+	bool loadKernels(const char* inputFilename,int sKernel,int nKernel);
 	
 	trainingDataSet* getTrainingDataSet();
 	std::vector<dataEntry*>& getAllDataEntries();
@@ -132,7 +141,8 @@ private:
 	
 	void processLine( std::string &line );
 	void processMat( cv::Mat frame );
-	void processLine2( std::string &line );
+	void processLine4maxmin( std::string &line );
+	void processLine4Image( std::string &line );
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <chrono>
 
 //include definition file
 #include "neuralNetworkTrainer.h"
@@ -148,10 +149,14 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 	//reset epoch and log counters
 	epoch = 0;
 	lastEpochLogged = -logResolution;
-		
+
+	//Time checking start!
+	float time = 0;
+	auto t0 = std::chrono::high_resolution_clock::now();
+
 	//train network using training dataset for training and generalization dataset for testing
 	//--------------------------------------------------------------------------------------------------------
-	while (	( generalizationSetAccuracy <  desiredAccuracy ) && epoch < maxEpochs )
+	while (	( generalizationSetAccuracy <  desiredAccuracy ) && epoch < maxEpochs && time < 1800 )
 	{			
 		//store previous accuracy
 		double previousTAccuracy = trainingSetAccuracy;
@@ -163,12 +168,12 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 		//get generalization set accuracy and MSE
 		generalizationSetAccuracy = NN->getSetAccuracy( tSet->generalizationSet );
 		generalizationSetMSE = NN->getSetMSE( tSet->generalizationSet );
-		NN->getRegression( tSet->generalizationSet,1 );
+		//NN->getRegression( tSet->generalizationSet,1 );
 
 		//get validation set accuracy and MSE
 		validationSetAccuracy = NN->getSetAccuracy(tSet->validationSet);
 		validationSetMSE = NN->getSetMSE(tSet->validationSet);
-		NN->getRegression( tSet->validationSet,2 );
+		//NN->getRegression( tSet->validationSet,2 );
 
 		//Log Training results
 		if ( loggingEnabled && logFile.is_open() && ( epoch - lastEpochLogged == logResolution ) ) 
@@ -176,9 +181,13 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 			logFile << epoch << "," << trainingSetAccuracy << "," << generalizationSetAccuracy << "," << validationSetAccuracy << "," << trainingSetMSE << "," << generalizationSetMSE << ","  << validationSetMSE << endl;
 			lastEpochLogged = epoch;
 		}
+
+		auto t1 = std::chrono::high_resolution_clock::now();
+		time = std::chrono::duration<float>(t1-t0).count();
 		//print out change in training /generalization accuracy (only if a change is greater than a percent)
 		if ( ceil(previousTAccuracy) != ceil(trainingSetAccuracy) || ceil(previousGAccuracy) != ceil(generalizationSetAccuracy) ) 
 		{	
+			t0 = t1;
 			cout << "Epoch :" << epoch;
 			cout << " TSet Acc:" << trainingSetAccuracy << "%, MSE: " << trainingSetMSE ;
 			cout << " GSet Acc:" << generalizationSetAccuracy << "%, MSE: " << generalizationSetMSE << endl;
@@ -206,7 +215,7 @@ void neuralNetworkTrainer::runTrainingEpoch( vector<dataEntry*> trainingSet )
 	//incorrect patterns
 	double incorrectPatterns = 0;
 	double mse = 0;
-		
+
 	//for every training pattern
 	for ( int tp = 0; tp < (int) trainingSet.size(); tp++)
 	{						
@@ -238,7 +247,7 @@ void neuralNetworkTrainer::runTrainingEpoch( vector<dataEntry*> trainingSet )
 	//update training accuracy and MSE
 	trainingSetAccuracy = 100 - (incorrectPatterns/trainingSet.size() * 100);
 	trainingSetMSE = mse / ( NN->nOutput * trainingSet.size() );
-	NN->getRegression(trainingSet,0);
+	//NN->getRegression(trainingSet,0);
 }
 /*******************************************************************
 * Propagate errors back through NN and calculate delta values
@@ -271,6 +280,7 @@ void neuralNetworkTrainer::backpropagate( double* desiredOutputs )
 			{
 				//get error gradient for every hidden node
 				hiddenErrorGradients[k+1][j] = getHiddenErrorGradient(k+1,j);
+
 				//for all nodes in input layer and bias neuron
 				for (int i = 0; i <= NN->nHidden[k]; i++)
 				{
@@ -291,7 +301,6 @@ void neuralNetworkTrainer::backpropagate( double* desiredOutputs )
 	{
 		//get error gradient for every hidden node
 		hiddenErrorGradients[0][j] = getHiddenErrorGradient(0,j);
-
 		//for all nodes in input layer and bias neuron
 		for (int i = 0; i <= NN->nInput; i++)
 		{

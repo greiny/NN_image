@@ -22,20 +22,26 @@ int main()
 {		
 	//seed random number generator
 	srand( (unsigned int) time(0) );
+
+	int nKernel = 10;
+	int sKernel = 7;
+	int pdim = 2;
 	
 	//Training condition
-	int nInput = 28*28;
-	vector<int> nLayer{250};
+	int sImage= 28*28;
+	int nInput = (((int)sqrt(sImage))/pdim)^2;
+	vector<int> nLayer{256};
 	int nOutput = 1;
 
 	int max_epoch = 1000000;
-	int accuracy = 97;
+	int accuracy = 98;
 	float lr = 0.001;
 	float momentum = 0.9;
 
 	//create data set reader and load data file
 	dataReader d;
-	d.loadDataFile4Train("image_data/imgdata_hsv.csv",nInput,nOutput,0.7,0.3);
+	d.loadKernels("kernel.csv",sKernel,nKernel);
+	d.loadImageFile4Train("image_data/imgdata_gray.csv",sImage,nOutput,0.7,0.3,sKernel,nKernel,pdim);
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network
@@ -56,7 +62,7 @@ int main()
 	logTrain.open(file_name,ios::out);
 	if ( logTrain.is_open() )
 	{
-		logTrain << "#Input" << "," << nInput << endl;
+		logTrain << "#Input" << "," << sImage << endl;
 		logTrain << "#Layer" << "," << nLayer.size() << endl;
 		for (int i=0; i<nLayer.size(); i++) logTrain << "#Neuron["<< i << "]," << nLayer[i] << endl;
 		logTrain << "#Output" << "," << nOutput << endl;

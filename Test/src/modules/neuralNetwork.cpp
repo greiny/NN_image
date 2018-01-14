@@ -129,6 +129,7 @@ bool neuralNetwork::loadWeights(const char* filename)
 		//check if sufficient weights were loaded
 		int num_weight = (nInput + 1) * nHidden[0] + (nHidden[nLayer-1] +  1) * nOutput;
 		if (nLayer>1) for (int k=0; k<nLayer-1; k++) num_weight += (nHidden[k] +  1) * nHidden[k+1];
+
 		if ( weights.size() != num_weight )
 		{
 			cout << endl << "Error - Incorrect number of weights in input file: " << filename << endl;
@@ -176,6 +177,7 @@ bool neuralNetwork::loadWeights(const char* filename)
 		return false;
 	}
 }
+
 /*******************************************************************
 * Save Neuron Weights
 ********************************************************************/
@@ -368,6 +370,7 @@ inline double neuralNetwork::activationFunction( double x )
 {
 	//sigmoid function
 	//return tanh(x);
+	//return max(0,x);
 	return 1/(1+exp(-x));
 }	
 /*******************************************************************
@@ -386,7 +389,6 @@ void neuralNetwork::feedForward(double* pattern)
 {
 	//set input neurons to input values
 	for(int i = 0; i < nInput; i++) inputNeurons[i] = pattern[i];
-
 	for(int j=0; j < nHidden[0]; j++)
 	{
 		//clear value
@@ -427,5 +429,3 @@ void neuralNetwork::feedForward(double* pattern)
 		outputNeurons[j] = activationFunction( outputNeurons[j] );
 	}
 }
-
-

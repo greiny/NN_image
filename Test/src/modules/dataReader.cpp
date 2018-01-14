@@ -1,11 +1,12 @@
 //include definition file
 #include "dataReader.h"
-
+#include "matrix_maths.h"
 #include <iostream>
 #include <fstream>
 #include <string.h>
 #include <math.h>
 #include <algorithm>
+
 
 using namespace std;
 using namespace cv;
@@ -61,14 +62,14 @@ bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float
 		for(int i=0; i < nInputs; i++)
 		{
 			buf[i] = new( double[(int)data.size()] );
-			double min=0, max = 255;
-			/*for(int j=0; j < (int)data.size(); j++)
+			double min=100000, max = 0;
+			for(int j=0; j < (int)data.size(); j++)
 			{
 				double temp = (double)data[j]->pattern[i];
 			    if (temp > max) max = temp;
 			    if (temp < min) min = temp;
 			    buf[i][j] = temp;
-			}*/
+			}
 			minVal.push_back(min);
 			maxVal.push_back(max);
 			maxmin << min << "," << max << endl;
@@ -83,11 +84,11 @@ bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float
 				double diff = maxVal[ii]-minVal[ii];
 				if (diff==0)
 				{
-					data[jj]->pattern[ii]=ratio*1.0;
+					data[jj]->pattern[ii]=1.0;
 				}
 				else
 				{
-					data[jj]->pattern[ii]=(double)((buf[ii][jj]-minVal[ii])/diff)*ratio;
+					data[jj]->pattern[ii]=(double)((buf[ii][jj]-minVal[ii])/diff);
 				} // normalization to 0~1
 			}
 
@@ -100,10 +101,10 @@ bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float
 		trainingDataEndIndex = (int) ( tratio * data.size() );
 		int gSize = (int) ( ceil(gratio * data.size()) );
 		int vSize = (int) ( data.size() - trainingDataEndIndex - gSize );
-							
+
 		//generalization set
 		for ( int i = trainingDataEndIndex; i < trainingDataEndIndex + gSize; i++ ) tSet.generalizationSet.push_back( data[i] );
-				
+
 		//validation set
 		for ( int i = trainingDataEndIndex + gSize; i < (int) data.size(); i++ ) tSet.validationSet.push_back( data[i] );
 
@@ -112,40 +113,98 @@ bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float
 
 		return true;
 	}
-	else 
+	else
 	{
 		cout << "Error Opening Input File: " << filename << endl;
 		return false;
 	}
 }
 
-void dataReader::loadMat4Test(const Mat frame, int nI, int nT)
+bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,float tratio, float gratio , int sK, int nK, int pdim)
+{
+	//clear any previous data
+	for (int i=0; i < (int) data.size(); i++ ) delete data[i];
+	data.clear();
+	tSet.clear();
+
+	//set number of inputs and outputs
+	sImage = nI;
+	nTargets = nT;
+
+	//open file for reading
+	fstream inputFile;
+	inputFile.open(filename, ios::in);
+
+	if ( inputFile.is_open() )
+	{
+		string line = "";
+
+		//read data
+		while ( !inputFile.eof() )
+		{
+			// get num of line
+			getline(inputFile, line);
+
+			//process line
+			if (line.length() > 2 ) processLine4Image(line);
+		}
+
+		//print success
+		cout << "Input File: " << filename << "\nRead Complete: " << data.size() << " Patterns Loaded"  << endl;
+
+		//normalize data 0~1
+		for(int ii=0; ii < sImage; ii++) for(int jj=0; jj < data.size(); jj++) data[jj]->pattern[ii]=(double)(data[jj]->pattern[ii]/255.0);
+
+		// convolve data
+		for(int jj=0; jj < data.size(); jj++)
+		{
+			data[jj]-> pattern = ConvNPooling(data[jj]->pattern,sImage,sKernel,nKernel,pdim);
+		}
+
+		//shuffle data
+		random_shuffle(data.begin(), data.end());
+
+		//split data set
+		trainingDataEndIndex = (int) ( tratio * data.size() );
+		int gSize = (int) ( ceil(gratio * data.size()) );
+		int vSize = (int) ( data.size() - trainingDataEndIndex - gSize );
+
+		//generalization set
+		for ( int i = trainingDataEndIndex; i < trainingDataEndIndex + gSize; i++ ) tSet.generalizationSet.push_back( data[i] );
+
+		//validation set
+		for ( int i = trainingDataEndIndex + gSize; i < (int) data.size(); i++ ) tSet.validationSet.push_back( data[i] );
+
+		//close file
+		inputFile.close();
+
+		return true;
+	}
+	else
+	{
+		cout << "Error Opening Input File: " << filename << endl;
+		return false;
+	}
+}
+
+void dataReader::loadImage4Test(const Mat frame,int sI, int nT)
 {
 	//clear any previous data
 	for (int i=0; i < (int) data.size(); i++ ) delete data[i];		
 	data.clear();
 	tSet.clear();
-	
-	//set number of inputs and outputs
-	nInputs = nI;
-	nTargets = nT;
 
+	sImage = sI;
+	nTargets = nT;
 	processMat(frame);
-	for(int i=0; i < nInputs; i++)
-	{
-		for(int j=0; j < data.size(); j++)
-		{
-			double diff = ref[i]->p_max-ref[i]->p_min;
-			data[j]->pattern[i]=(double)((data[j]->pattern[i]-ref[i]->p_min)/diff)*ratio;
-		}
-	}
+
 	//validation set
 	trainingDataEndIndex = (int)0;
 	for ( int i = 0; i < (int) data.size(); i++ ) tSet.validationSet.push_back( data[i] );
 
 }
 
-bool dataReader::maxmin( const char* filename, int nI)
+bool dataReader::maxmin( const char* filename)
 {
 		//open file for maxmin value
 		fstream maxminFile;
@@ -161,7 +220,7 @@ bool dataReader::maxmin( const char* filename, int nI)
 			{
 				// get num of line
 				getline(maxminFile, line2);
-				if (line2.length() > 2 ) processLine2(line2);  //ref[i]->p_min
+				if (line2.length() > 2 ) processLine4maxmin(line2);  //ref[i]->p_min
 			}
 
 			//close file
@@ -182,17 +241,12 @@ bool dataReader::maxmin( const char* filename, int nI)
 void dataReader::processMat( const Mat frame )
 {
 	//create new pattern and target
-	double* pattern = new double[nInputs];
+	double* pattern = new double[sImage];
 	double* target = new double[nTargets];
-	
-	int i = 0;
-	while ( i < (nInputs + nTargets) )
-	{	
-		if ( i < nInputs ) pattern[i] = (unsigned char)(frame.data[i]);
-		else target[i - nInputs] = (unsigned char)(frame.data[i]);
-		i++;			
-	}
-	
+	frame.convertTo(frame, CV_64FC1, 1.0/255, 0);
+	pattern = ConvNPooling(frame,sKernel,nKernel,pdim);
+	for (int i=0; i<nTargets; i++) if ( i < sImage ) target[i] = 0;
+
 	//add to records
 	data.push_back( new dataEntry( pattern, target ) );		
 }
@@ -227,7 +281,36 @@ void dataReader::processLine( string &line )
 	data.push_back( new dataEntry( pattern, target ) );		
 }
 
-void dataReader::processLine2( string &line2 )
+void dataReader::processLine4Image( string &line )
+{
+	//create new pattern and target
+	double* pattern = new double[sImage];
+	double* target = new double[nTargets];
+
+	//store inputs
+	char* cstr = new char[line.size()+1];
+	char* t;
+	strcpy(cstr, line.c_str());
+
+	//tokenise
+	int i = 0;
+	t=strtok (cstr,",");
+
+	while ( t!=NULL && i < (sImage + nTargets) )
+	{
+		if ( i < sImage ) pattern[i] = atof(t);
+		else target[i - sImage] = atof(t);
+
+		//move token onwards
+		t = strtok(NULL,",");
+		i++;
+	}
+
+	//add to records
+	data.push_back( new dataEntry( pattern, target ) );
+}
+
+void dataReader::processLine4maxmin( string &line2 )
 {
 	//create new pattern and target
 	double p_max = 0;
@@ -377,3 +460,214 @@ void dataReader::createWindowingDataSet()
 	windowingStartIndex += windowingStepSize;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+Mat
+dataReader::Pooling(const Mat &M, int pVert, int pHori, int poolingMethod){
+    if(pVert == 1 && pHori == 1){
+        Mat res;
+        M.copyTo(res);
+        return res;
+    }
+    int remX = M.cols % pHori;
+    int remY = M.rows % pVert;
+    Mat newM;
+    if(remX == 0 && remY == 0) M.copyTo(newM);
+    else{
+        Rect roi = Rect(remX / 2, remY / 2, M.cols - remX, M.rows - remY);
+        M(roi).copyTo(newM);
+    }
+    Mat res = Mat::zeros(newM.rows / pVert, newM.cols / pHori, CV_64FC1);
+    for(int i=0; i<res.rows; i++){
+        for(int j=0; j<res.cols; j++){
+            Mat temp;
+            Rect roi = Rect(j * pHori, i * pVert, pHori, pVert);
+            newM(roi).copyTo(temp);
+            double val = 0.0;
+            // for Max Pooling
+            if(POOL_MAX == poolingMethod){
+                double minVal = 0.0;
+                double maxVal = 0.0;
+                Point minLoc;
+                Point maxLoc;
+                minMaxLoc( temp, &minVal, &maxVal, &minLoc, &maxLoc );
+                val = maxVal;
+            }elif(POOL_MEAN == poolingMethod){
+                // Mean Pooling
+                val = sum(temp)[0] / (pVert * pHori);
+            }elif(POOL_STOCHASTIC == poolingMethod){
+                // Stochastic Pooling
+                double sumval = sum(temp)[0];
+                Mat prob = temp.mul(Reciprocal(sumval));
+                val = sum(prob.mul(temp))[0];
+                prob.release();
+            }
+            res.ATD(i, j) = val;
+            temp.release();
+        }
+    }
+    newM.release();
+    return res;
+}
+
+double* dataReader::ConvNPooling(double *pattern, int sImage, int sKernel, int nKernel, int pdim)
+{
+	int rows = (int)sqrt(sImage);
+	Mat img(rows,rows,CV_64FC1);
+	for(int j = 0; j < rows; j++) for(int i = 0; i < rows; i++) img.ATD(j, i) = (double)pattern[j*rows+i];
+
+   	vector<Mat> Kernelset;
+	vector<Mat> conv;
+    for(int k = 0; k < Kernels.size(); k++)
+	{
+		Mat buf(sKernel,sKernel,CV_64FC1);
+		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.ATD(j,i) = (double) Kernels[k][i][j];
+		Kernelset.push_back(buf);
+		buf.release();
+	}
+
+
+	for(int k = 0; k < Kernelset.size(); k++)
+	{
+		Mat temp = rot90(Kernelset[k], 2);
+		Mat tmpconv = convCalc(img, temp, CONV_SAME);
+		tmpconv = nonLinearity(tmpconv,NL_RELU);
+		conv.push_back(tmpconv);
+	}
+
+	for(int k = 0; k < Kernelset.size(); k++)
+	{
+		Mat temp = conv[k];
+		conv[k] = Pooling(temp, pdim, pdim, POOL_MAX);
+	}
+
+	double* conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
+	for(int k = 0; k < Kernelset.size(); k++)
+	{
+		int nPixel = conv[k].cols*conv[k].rows;
+		for(int j = 0; j < conv[k].rows; j++)
+			for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
+	}
+	conv.clear();
+	return conv_pattern;
+}
+
+double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
+{
+   	vector<Mat> Kernelset;
+	vector<Mat> conv;
+
+	//Kernel loaded
+    for(int k = 0; k < Kernels.size(); k++)
+	{
+		Mat buf(sKernel,sKernel,CV_64FC1);
+		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.data[i*sKernel+j] = (double) Kernels[k][i][j];
+		Kernelset.push_back(buf);
+		buf.release();
+	}
+
+	for(int k = 0; k < Kernelset.size(); k++)
+	{
+		Mat temp = rot90(Kernelset[k], 2);
+		Mat tmpconv = convCalc(pattern, temp, CONV_SAME);
+		tmpconv = nonLinearity(tmpconv,NL_RELU);
+		conv.push_back(tmpconv);
+	}
+
+	for(int k = 0; k < Kernelset.size(); k++)
+	{
+		Mat temp = conv[k];
+		conv[k] = Pooling(temp, pdim, pdim, POOL_MAX);
+	}
+
+	double* conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
+	for(int k = 0; k < Kernelset.size(); k++)
+	{
+		int nPixel = conv[k].cols*conv[k].rows;
+		for(int i = 0; i < nPixel; i++) conv_pattern[k*nPixel+i] = (double)conv[k].data[i];
+	}
+	return conv_pattern;
+}
+
+bool dataReader::loadKernels(const char* filename, int sk, int nk)
+{
+	//open file for reading
+	fstream inputFile;
+	inputFile.open(filename, ios::in);
+
+	sKernel = (int)sk;
+	nKernel = (int)nk;
+
+	if ( inputFile.is_open() )
+	{
+		vector<double> weights;
+		string line = "";
+
+		//read data
+		while ( !inputFile.eof() )
+		{
+			getline(inputFile, line);
+
+			//process line
+			if (line.length() > 2 )
+			{
+				//store inputs
+				char* cstr = new char[line.size()+1];
+				char* t;
+				strcpy(cstr, line.c_str());
+
+				//tokenise
+				int i = 0;
+				t=strtok (cstr,",");
+
+				while ( t!=NULL )
+				{
+					weights.push_back( atof(t) );
+
+					//move token onwards
+					t = strtok(NULL,",");
+					i++;
+				}
+
+				//free memory
+				delete[] cstr;
+			}
+		}
+
+		//check if sufficient weights were loaded
+		int num_weight = sKernel * sKernel * nKernel;
+		if ( weights.size() != num_weight )
+		{
+			cout << endl << "Error - Incorrect number of Kernels in input file: " << filename << endl;
+			//close file
+			inputFile.close();
+
+			return false;
+		}
+		else
+		{
+			//set weights
+			int pos = 0;
+			for ( int k=0; k < nKernel; k++ )
+			{
+				double** buf = new( double*[sKernel] );
+				for ( int i=0; i < sKernel; i++ )
+				{
+					buf[i] = new (double[sKernel]);
+					for ( int j=0; j < sKernel; j++ ) buf[i][j] = weights[pos++];
+				}
+				Kernels.push_back(buf);
+			}
+			//print success
+			cout << endl << "Convolution Kernels loaded successfully from '" << filename << "'" << endl;
+			//close file
+			inputFile.close();
+			return true;
+		}
+	}
+	else
+	{
+		cout << endl << "Error - Kernel input file '" << filename << "' could not be opened: " << endl;
+		return false;
+	}
+}

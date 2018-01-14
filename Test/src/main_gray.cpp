@@ -16,7 +16,7 @@
 #include <opencv2/core/utility.hpp>
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
-#include <librealsense/rs.hpp>
+//#include <librealsense/rs.hpp>
 
 //custom includes
 #include "modules/neuralNetwork.h"
@@ -24,7 +24,7 @@
 
 using namespace std;
 using namespace cv;
-using namespace rs;
+//using namespace rs;
 
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
 #define _USE_MATH_DEFINES
@@ -32,14 +32,25 @@ using namespace rs;
 
 void main_ellipse ();
 
+
 int const INPUT_WIDTH      = 640;
 int const INPUT_HEIGHT     = 480;
 int const FRAMERATE        = 60;
 
+int nKernel = 10;
+int sKernel = 7;
+int pdim = 2;
+
 //Training condition
-int nPattern = 28*28;
-vector<int> nLayer{250};
+int sImage= 28*28;
+int nPattern = (((int)sqrt(sImage))/pdim)^2;
+vector<int> nLayer{256};
 int nTarget = 1;
+
+// constans of Gaussian blur
+Size ksize = Size(5, 5);
+double sigma1 = 2;
+double sigma2 = 2;
 
 dataReader dR;
 neuralNetwork nn(nPattern,nLayer,nTarget);
@@ -47,24 +58,27 @@ float neural_thres = 0.95; // this is for threshold to determine if x is true or
 //VideoWriter video("out.avi",CV_FOURCC('M','J','P','G'),10, Size(INPUT_WIDTH,INPUT_HEIGHT),true);
 //ofstream logfile("log.csv");
 
+VideoCapture capture(0);
+
 int main(int argc, const char* argv[])
 {
 	// Loads a csv file of weight matrix data
-	char* weights_file = "log/weights_hsv.txt";
+	char* kernel_file = "log/kernel.csv";
+	dR.loadKernels(kernel_file,sKernel,nKernel);
+
+	// Loads a csv file of weight matrix data
+	char* weights_file = "log/weights.txt";
 	nn.loadWeights(weights_file);
 
-	//open file for maxmin value
-	char* maxmin_file = "log/maxmin0.csv";
-	dR.maxmin(maxmin_file, nPattern);
-
-    	//logfile << "#Contour" << "," << "Data" << endl;
-    	main_ellipse();
+	//logfile << "#Contour" << "," << "Data" << endl;
+	main_ellipse();
 
     return 0;
 }
 
 void main_ellipse ()
 {
+#if 0
 	// Detect device 
 	rs::log_to_console(rs::log_severity::warn);
 	rs::context ctx;
@@ -75,6 +89,7 @@ void main_ellipse ()
 	rs::device * dev = ctx.get_device(0);
 	dev->enable_stream(rs::stream::color, INPUT_WIDTH, INPUT_HEIGHT, rs::format::bgr8, FRAMERATE);
 	dev->start();
+#endif
 
 	bool flag=1;
 	Mat frame;
@@ -87,16 +102,11 @@ void main_ellipse ()
 
 	while (1)
 	{
-		vector<vector<Point>> contours;
-		vector<Vec4i> hierarchy;
-		// constans of Gaussian blur
-		Size ksize = Size(5, 5);
-		double sigma1 = 2;
-		double sigma2 = 2;
 		if (flag==1)
 		{
-			dev->wait_for_frames();
-			frame = Mat(Size(INPUT_WIDTH, INPUT_HEIGHT), CV_8UC3, (void*)dev->get_frame_data(rs::stream::color), Mat::AUTO_STEP);
+			//dev->wait_for_frames();
+			//frame = Mat(Size(INPUT_WIDTH, INPUT_HEIGHT), CV_8UC3, (void*)dev->get_frame_data(rs::stream::color), Mat::AUTO_STEP);
+			capture >> frame;
 			flag = 0;
 		}
 		else
@@ -113,6 +123,9 @@ void main_ellipse ()
 			mask.copyTo(mask_cp);
 			cv::cvtColor(mask_cp, mask_cp, COLOR_GRAY2BGR);
 			mask_cp.copyTo(mask_cp2);
+
+			vector<vector<Point>> contours;
+			vector<Vec4i> hierarchy;
 			findContours(mask, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
 			/// Get the moments and mass centers:
@@ -180,15 +193,17 @@ void main_ellipse ()
 								//ellipse(dst_gpu, box, Scalar(0,0,255), 1, LINE_AA);
 								//ellipse(dst_gpu, box.center, box.size*0.5f, box.angle, 0, 360, Scalar(0,255,255), 1, LINE_AA);
 
-								Rect roi=  boundingRect(contours[i]);
+								Rect roi = boundingRect(contours[i]);
 								rectangle(mask_cp,roi,Scalar(0,0,255));
 
-								Mat crop = frame(roi); 
+								Mat crop = src(roi); 
 								resize(crop,crop,Size(sqrt(nPattern),sqrt(nPattern)));
-								cvtColor(crop, crop, cv::COLOR_BGR2HSV);
-								Mat hsv[3];
-								split(crop,hsv);
-								hsv[0].copyTo(crop);
+								Canny(crop, crop, 80, 160, 3);
+								
+								//cvtColor(crop, crop, cv::COLOR_BGR2HSV);
+								//Mat hsv[3];
+								//split(crop,hsv);
+								//hsv[0].copyTo(crop);
 /*
 								Mat crop3 = frame(roi);
 								std::ostringstream name2;
@@ -196,27 +211,23 @@ void main_ellipse ()
 								imwrite(name2.str(), crop3);
 								num_x++;*/
 
-								dR.loadMat4Test(crop,nPattern,nTarget);
-								trainingDataSet *testSet = dR.getTrainingDataSet();
-								double *val[(int) testSet->validationSet.size()];
-								double *res[(int) testSet->validationSet.size()];
-								for ( int tp = 0; tp < (int) testSet->validationSet.size(); tp++)
+								double *res;
+								double *conv_pattern = dR.ConvNPooling(crop,sKernel,nKernel,pdim);
+								res = nn.feedForwardPattern(conv_pattern); // calculation results
+								cout << res[0] <<endl;
+								if (res[0] > neural_thres )
 								{
-									res[tp] = nn.feedForwardPattern(testSet->validationSet[tp]->pattern); // calculation results
-									cout << res[tp][0] <<endl;
-									if (res[tp][0] > neural_thres )
-									{
-										//cout << "Found!" << endl;
-										rectangle(mask_cp2,roi,Scalar(255,0,0));
-										/*
-										Mat crop2 = frame(roi);
-										std::ostringstream name;
-										name << "data/neural#" << num_o << ".png";
-										imwrite(name.str(), crop2);
-										num_o++;
-										*/
-									}
+									//cout << "Found!" << endl;
+									rectangle(mask_cp2,roi,Scalar(255,0,0));
+									/*
+									Mat crop2 = frame(roi);
+									std::ostringstream name;
+									name << "data/neural#" << num_o << ".png";
+									imwrite(name.str(), crop2);
+									num_o++;
+									*/
 								}
+
 							}
 						}
 						else
@@ -254,12 +265,13 @@ void main_ellipse ()
 									Rect roi=  boundingRect(contours[i]);
 									rectangle(mask_cp,roi,Scalar(0,0,255));
 									
-									Mat crop = frame(roi); 
+									Mat crop = src(roi); 
 									resize(crop,crop,Size(sqrt(nPattern),sqrt(nPattern)));
-									cvtColor(crop, crop, cv::COLOR_BGR2HSV);
-									Mat hsv[3];
-									split(crop,hsv);
-									hsv[0].copyTo(crop);
+									Canny(crop, crop, 80, 160, 3);
+									//cvtColor(crop, crop, cv::COLOR_BGR2HSV);
+									//Mat hsv[3];
+									//split(crop,hsv);
+									//hsv[0].copyTo(crop);
 									
 /*									
 									Mat crop3 = frame(roi);
@@ -268,27 +280,23 @@ void main_ellipse ()
 									imwrite(name2.str(), crop3);
 									num_x++;
 */
-									dR.loadMat4Test(crop,nPattern,nTarget);
-									trainingDataSet *testSet = dR.getTrainingDataSet();
-									double *val[(int) testSet->validationSet.size()];
-									double *res[(int) testSet->validationSet.size()];
-									for ( int tp = 0; tp < (int) testSet->validationSet.size(); tp++)
+									double *res;
+									double *conv_pattern = dR.ConvNPooling(crop,sKernel,nKernel,pdim);
+									res = nn.feedForwardPattern(conv_pattern); // calculation results
+									cout << res[0] <<endl;
+									if (res[0] > neural_thres )
 									{
-										res[tp] = nn.feedForwardPattern(testSet->validationSet[tp]->pattern); // calculation results
-										cout << res[tp][0] <<endl;
-										if (res[tp][0] > neural_thres )
-										{
-											//cout << "Found!" << endl;
-											rectangle(mask_cp2,roi,Scalar(255,0,0));
-											/*
-											Mat crop2 = frame(roi);
-											std::ostringstream name;
-											name << "data/neural#" << num_o << ".png";
-											imwrite(name.str(), crop2);
-											num_o++;
-											*/
-										}
+										//cout << "Found!" << endl;
+										rectangle(mask_cp2,roi,Scalar(255,0,0));
+										/*
+										Mat crop2 = frame(roi);
+										std::ostringstream name;
+										name << "data/neural#" << num_o << ".png";
+										imwrite(name.str(), crop2);
+										num_o++;
+										*/
 									}
+									
 								}
 							}
 						}// end of else
@@ -316,10 +324,10 @@ void main_ellipse ()
 			Mat info(Size(frame.cols*3,50),frame.type(),Scalar::all(0));
 			std::ostringstream ssgpu;
 			ssgpu << "FPS : " << fps << " Resolution : " << frame.cols << " x " << frame.rows;
-			putText(info, ssgpu.str(), Point(30,30), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 1.5);
-			putText(frame, "Original", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255, 255), 1.5);			
-			putText(mask_cp, "w/o Neural", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 1.5);
-			putText(mask_cp2, "w/ Neural", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 1.5);
+			putText(info, ssgpu.str(), Point(30,30), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 2);
+			putText(frame, "Original", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255, 255), 2);			
+			putText(mask_cp, "w/o Neural", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 2);
+			putText(mask_cp2, "w/ Neural", Point(10,20), FONT_HERSHEY_SIMPLEX,0.6, Scalar(0, 255,255), 2);
 			//video << buf;
 
 			Mat matDst(Size(frame.cols*3,frame.rows),frame.type(),Scalar::all(0));
