@@ -101,7 +101,6 @@ private:
 	//data set creation approach and total number of dataSets
 	int creationApproach;
 	int numTrainingSets;
-	int trainingDataEndIndex;
 
 	//creation approach variables
 	double growingStepSize;			//step size - percentage of total set
@@ -113,7 +112,7 @@ private:
 //public methods
 //----------------------------------------------------------------------------------------------------------------
 public:
-
+	int trainingDataEndIndex;
 	dataReader(): creationApproach(NONE), numTrainingSets(-1) {}
 	~dataReader();
 	bool loadDataFile4Train( const char* filename, int nI, int nT, float gratio, float tratio ); //maxmin->normalization

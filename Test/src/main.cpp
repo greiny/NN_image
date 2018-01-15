@@ -43,9 +43,9 @@ int pdim = 2;
 
 //Training condition
 int sImage= 28*28;
-int nPattern = (((int)sqrt(sImage))/pdim)^2;
+int nPattern = (int)pow((int)sqrt(sImage)/pdim,2)*nKernel;
 vector<int> nLayer{256};
-int nTarget = 1;
+int nTarget = 2;
 
 // constans of Gaussian blur
 Size ksize = Size(5, 5);
@@ -67,7 +67,7 @@ int main(int argc, const char* argv[])
 	dR.loadKernels(kernel_file,sKernel,nKernel);
 
 	// Loads a csv file of weight matrix data
-	char* weights_file = "log/weights.txt";
+	char* weights_file = "log/weights0.txt";
 	nn.loadWeights(weights_file);
 
 	//logfile << "#Contour" << "," << "Data" << endl;
@@ -100,7 +100,7 @@ void main_ellipse ()
 	float time = 0, fps = 0;
 	auto t0 = std::chrono::high_resolution_clock::now();
 
-	while (1)
+	while(1)
 	{
 		if (flag==1)
 		{
@@ -112,6 +112,8 @@ void main_ellipse ()
 		else
 		{
 			Mat src,mask;
+			Rect half(0, 0, frame.cols/2, frame.rows);
+			frame = frame(half);
 			resize(frame,frame,Size(), 0.5, 0.5);
 			cv::cvtColor(frame, src, COLOR_BGR2GRAY);
 			//equalizeHist(src, src);
@@ -195,15 +197,8 @@ void main_ellipse ()
 
 								Rect roi = boundingRect(contours[i]);
 								rectangle(mask_cp,roi,Scalar(0,0,255));
-
-								Mat crop = src(roi); 
-								resize(crop,crop,Size(sqrt(nPattern),sqrt(nPattern)));
-								Canny(crop, crop, 80, 160, 3);
-								
-								//cvtColor(crop, crop, cv::COLOR_BGR2HSV);
-								//Mat hsv[3];
-								//split(crop,hsv);
-								//hsv[0].copyTo(crop);
+								Mat crop = mask(roi); 
+								resize(crop,crop,Size(sqrt(sImage),sqrt(sImage)));
 /*
 								Mat crop3 = frame(roi);
 								std::ostringstream name2;
@@ -214,8 +209,8 @@ void main_ellipse ()
 								double *res;
 								double *conv_pattern = dR.ConvNPooling(crop,sKernel,nKernel,pdim);
 								res = nn.feedForwardPattern(conv_pattern); // calculation results
-								cout << res[0] <<endl;
-								if (res[0] > neural_thres )
+								cout << res[0] << ", " << res[1] <<endl;
+								if (res[0] > res[1] )
 								{
 									//cout << "Found!" << endl;
 									rectangle(mask_cp2,roi,Scalar(255,0,0));
@@ -264,15 +259,8 @@ void main_ellipse ()
 
 									Rect roi=  boundingRect(contours[i]);
 									rectangle(mask_cp,roi,Scalar(0,0,255));
-									
-									Mat crop = src(roi); 
-									resize(crop,crop,Size(sqrt(nPattern),sqrt(nPattern)));
-									Canny(crop, crop, 80, 160, 3);
-									//cvtColor(crop, crop, cv::COLOR_BGR2HSV);
-									//Mat hsv[3];
-									//split(crop,hsv);
-									//hsv[0].copyTo(crop);
-									
+									Mat crop = mask(roi);   
+									resize(crop,crop,Size(sqrt(sImage),sqrt(sImage)));
 /*									
 									Mat crop3 = frame(roi);
 									std::ostringstream name2;
@@ -283,8 +271,8 @@ void main_ellipse ()
 									double *res;
 									double *conv_pattern = dR.ConvNPooling(crop,sKernel,nKernel,pdim);
 									res = nn.feedForwardPattern(conv_pattern); // calculation results
-									cout << res[0] <<endl;
-									if (res[0] > neural_thres )
+									cout << res[0] << ", " << res[1] <<endl;
+									if (res[0] > res[1] )
 									{
 										//cout << "Found!" << endl;
 										rectangle(mask_cp2,roi,Scalar(255,0,0));

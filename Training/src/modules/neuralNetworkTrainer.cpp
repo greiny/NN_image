@@ -181,10 +181,9 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 			logFile << epoch << "," << trainingSetAccuracy << "," << generalizationSetAccuracy << "," << validationSetAccuracy << "," << trainingSetMSE << "," << generalizationSetMSE << ","  << validationSetMSE << endl;
 			lastEpochLogged = epoch;
 		}
-
-		auto t1 = std::chrono::high_resolution_clock::now();
-		time = std::chrono::duration<float>(t1-t0).count();
+		
 		//print out change in training /generalization accuracy (only if a change is greater than a percent)
+		auto t1 = std::chrono::high_resolution_clock::now();
 		if ( ceil(previousTAccuracy) != ceil(trainingSetAccuracy) || ceil(previousGAccuracy) != ceil(generalizationSetAccuracy) ) 
 		{	
 			t0 = t1;
@@ -192,7 +191,8 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 			cout << " TSet Acc:" << trainingSetAccuracy << "%, MSE: " << trainingSetMSE ;
 			cout << " GSet Acc:" << generalizationSetAccuracy << "%, MSE: " << generalizationSetMSE << endl;
 		}
-		
+		time = std::chrono::duration<float>(t1-t0).count();
+
 		//once training set is complete increment epoch
 		epoch++;
 

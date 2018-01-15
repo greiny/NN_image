@@ -133,6 +133,7 @@ bool neuralNetwork::loadWeights(const char* filename)
 		if ( weights.size() != num_weight )
 		{
 			cout << endl << "Error - Incorrect number of weights in input file: " << filename << endl;
+cout << "System needs " << num_weight << " and " << weights.size() << " put in " << endl;
 			//close file
 			inputFile.close();
 
@@ -164,12 +165,12 @@ bool neuralNetwork::loadWeights(const char* filename)
 
 			//print success
 			cout << endl << "Neuron weights loaded successfully from '" << filename << "'" << endl;
-
 			//close file
 			inputFile.close();
 			
 			return true;
-		}		
+		}	
+	
 	}
 	else 
 	{
@@ -379,7 +380,8 @@ inline double neuralNetwork::activationFunction( double x )
 int neuralNetwork::clampOutput( double x )
 {
 	if ( x > 0.9 ) return 1;
-	else return 0;
+	else if ( x < 0.1 ) return 0;
+	else return -1;
 }
 /*******************************************************************
 * Feed Forward Operation

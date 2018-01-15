@@ -28,10 +28,10 @@ int main()
 	int pdim = 2;
 	
 	//Training condition
-	int sImage= 28*28;
-	int nInput = (((int)sqrt(sImage))/pdim)^2;
+	int sImage = 28*28;
+	int nInput = (int)pow((int)sqrt(sImage)/pdim,2)*nKernel;
 	vector<int> nLayer{256};
-	int nOutput = 1;
+	int nOutput = 2;
 
 	int max_epoch = 1000000;
 	int accuracy = 98;
@@ -40,8 +40,10 @@ int main()
 
 	//create data set reader and load data file
 	dataReader d;
+	float tRatio = 0.7;
+	float vRatio = 0.3;
 	d.loadKernels("kernel.csv",sKernel,nKernel);
-	d.loadImageFile4Train("image_data/imgdata_gray.csv",sImage,nOutput,0.7,0.3,sKernel,nKernel,pdim);
+	d.loadImageFile4Train("image_data/imgdata_gray.csv",sImage,nOutput,tRatio,vRatio,sKernel,nKernel,pdim);
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network
@@ -58,26 +60,27 @@ int main()
 		file_no++;
 		sprintf(file_name,"log/condition%d.csv",file_no);
 	}
-	ofstream logTrain;
-	logTrain.open(file_name,ios::out);
-	if ( logTrain.is_open() )
-	{
-		logTrain << "#Input" << "," << sImage << endl;
-		logTrain << "#Layer" << "," << nLayer.size() << endl;
-		for (int i=0; i<nLayer.size(); i++) logTrain << "#Neuron["<< i << "]," << nLayer[i] << endl;
-		logTrain << "#Output" << "," << nOutput << endl;
-		logTrain << "#TrainingSet" << "," << (int)d.getNumTrainingSets() << endl;
-		logTrain << "Accuracy(%)" << "," << accuracy << endl;
-		logTrain << "Learning_rate" << "," << lr << endl;
-		logTrain << "Momentum" << "," << momentum << endl;
-		logTrain.close();
-	}
-
 
 	//create neural network trainer and save log
 	neuralNetworkTrainer nT( &nn );
 	nT.setTrainingParameters(lr, momentum, false);
 	nT.setStoppingConditions(max_epoch, accuracy);
+
+	ofstream logTrain;
+	logTrain.open(file_name,ios::out);
+	if ( logTrain.is_open() )
+	{
+		logTrain << "#Input" << "," << nInput << endl;
+		logTrain << "#Layer" << "," << nLayer.size() << endl;
+		for (int i=0; i<nLayer.size(); i++) logTrain << "#Neuron["<< i << "]," << nLayer[i] << endl;
+		logTrain << "#Output" << "," << nOutput << endl;
+		logTrain << "#TrainingSet" << "," << (int)d.trainingDataEndIndex << endl;
+		logTrain << "#ValidationSet" << "," << (int)((d.trainingDataEndIndex/tRatio)*vRatio) << endl;
+		logTrain << "Accuracy(%)" << "," << accuracy << endl;
+		logTrain << "Learning_rate" << "," << lr << endl;
+		logTrain << "Momentum" << "," << momentum << endl;
+		logTrain.close();
+	}
 
 	ostringstream log_name;
 	log_name << "log/log" << file_no << ".csv";

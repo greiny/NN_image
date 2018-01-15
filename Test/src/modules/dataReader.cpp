@@ -152,10 +152,7 @@ bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,floa
 		//print success
 		cout << "Input File: " << filename << "\nRead Complete: " << data.size() << " Patterns Loaded"  << endl;
 
-		//normalize data 0~1
-		for(int ii=0; ii < sImage; ii++) for(int jj=0; jj < data.size(); jj++) data[jj]->pattern[ii]=(double)(data[jj]->pattern[ii]/255.0);
-
-		// convolve data
+		// normalize and convolve data
 		for(int jj=0; jj < data.size(); jj++)
 		{
 			data[jj]-> pattern = ConvNPooling(data[jj]->pattern,sImage,sKernel,nKernel,pdim);
@@ -515,6 +512,7 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, int sKernel, int n
 	int rows = (int)sqrt(sImage);
 	Mat img(rows,rows,CV_64FC1);
 	for(int j = 0; j < rows; j++) for(int i = 0; i < rows; i++) img.ATD(j, i) = (double)pattern[j*rows+i];
+	img.convertTo(img, CV_64FC1, 1.0/255, 0);
 
    	vector<Mat> Kernelset;
 	vector<Mat> conv;
@@ -557,11 +555,16 @@ double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
    	vector<Mat> Kernelset;
 	vector<Mat> conv;
 
+	//Normalization
+	int rows = sqrt(sKernel);
+	Mat img(rows,rows,CV_64FC1);
+	pattern.convertTo(img, CV_64FC1, 1.0/255, 0);
+
 	//Kernel loaded
     for(int k = 0; k < Kernels.size(); k++)
 	{
 		Mat buf(sKernel,sKernel,CV_64FC1);
-		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.data[i*sKernel+j] = (double) Kernels[k][i][j];
+		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.ATD(j,i) = (double) Kernels[k][i][j];
 		Kernelset.push_back(buf);
 		buf.release();
 	}
@@ -569,7 +572,7 @@ double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
 	for(int k = 0; k < Kernelset.size(); k++)
 	{
 		Mat temp = rot90(Kernelset[k], 2);
-		Mat tmpconv = convCalc(pattern, temp, CONV_SAME);
+		Mat tmpconv = convCalc(img, temp, CONV_SAME);
 		tmpconv = nonLinearity(tmpconv,NL_RELU);
 		conv.push_back(tmpconv);
 	}
@@ -584,7 +587,8 @@ double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
 	for(int k = 0; k < Kernelset.size(); k++)
 	{
 		int nPixel = conv[k].cols*conv[k].rows;
-		for(int i = 0; i < nPixel; i++) conv_pattern[k*nPixel+i] = (double)conv[k].data[i];
+		for(int j = 0; j < conv[k].rows; j++)
+			for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
 	}
 	return conv_pattern;
 }
