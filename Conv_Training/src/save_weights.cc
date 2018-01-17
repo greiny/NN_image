@@ -12,7 +12,7 @@ save2txt(const Mat &data, string path, string str){
         for(int j = 0; j < data.cols; j++){
             fprintf(pOut, "%lf", data.ATD(i, j));
             if(j == data.cols - 1){
-                fprintf(pOut, "\n");
+                fprintf(pOut, ",\n");
             } 
             else{
                 fprintf(pOut, ",");
