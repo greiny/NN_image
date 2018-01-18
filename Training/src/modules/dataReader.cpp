@@ -519,7 +519,7 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, int sKernel, int n
     for(int k = 0; k < Kernels.size(); k++)
 	{
 		Mat buf(sKernel,sKernel,CV_64FC1);
-		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.ATD(j,i) = (double) Kernels[k][i][j];
+		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.ATD(j,i) = (double) Kernels[k][j][i];
 		Kernelset.push_back(buf);
 		buf.release();
 	}
@@ -564,7 +564,7 @@ double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
     for(int k = 0; k < Kernels.size(); k++)
 	{
 		Mat buf(sKernel,sKernel,CV_64FC1);
-		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.ATD(j,i) = (double) Kernels[k][i][j];
+		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.ATD(j,i) = (double) Kernels[k][j][i];
 		Kernelset.push_back(buf);
 		buf.release();
 	}

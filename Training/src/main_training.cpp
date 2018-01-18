@@ -23,18 +23,20 @@ int main()
 	//seed random number generator
 	srand( (unsigned int) time(0) );
 
-	int nKernel = 10;
+	int nKernel = 3;
 	int sKernel = 7;
 	int pdim = 2;
 	
 	//Training condition
 	int sImage = 28*28;
 	int nInput = (int)pow((int)sqrt(sImage)/pdim,2)*nKernel;
-	vector<int> nLayer{256};
+	vector<int> nLayer{64};
 	int nOutput = 2;
 
 	int max_epoch = 1000000;
-	int accuracy = 98;
+	double accuracy = 99.9;
+	double max_time = 300;
+
 	float lr = 0.001;
 	float momentum = 0.9;
 
@@ -42,8 +44,8 @@ int main()
 	dataReader d;
 	float tRatio = 0.7;
 	float vRatio = 0.3;
-	d.loadKernels("kernel.csv",sKernel,nKernel);
-	d.loadImageFile4Train("image_data/imgdata_gray.csv",sImage,nOutput,tRatio,vRatio,sKernel,nKernel,pdim);
+	d.loadKernels("kernel3.csv",sKernel,nKernel);
+	d.loadImageFile4Train("image_data/imgdata.csv",sImage,nOutput,tRatio,vRatio,sKernel,nKernel,pdim);
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network
@@ -64,7 +66,7 @@ int main()
 	//create neural network trainer and save log
 	neuralNetworkTrainer nT( &nn );
 	nT.setTrainingParameters(lr, momentum, false);
-	nT.setStoppingConditions(max_epoch, accuracy);
+	nT.setStoppingConditions(max_epoch, accuracy, max_time);
 
 	ofstream logTrain;
 	logTrain.open(file_name,ios::out);

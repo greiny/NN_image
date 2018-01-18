@@ -47,6 +47,7 @@ private:
 	
 	//accuracy/MSE required
 	double desiredAccuracy;
+	double maxTime;
 	
 	//change to weights
 	vector<double**> deltaHiddenHidden;
@@ -79,7 +80,7 @@ private:
 public:	
 	neuralNetworkTrainer( neuralNetwork* untrainedNetwork );
 	void setTrainingParameters( double lR, double m, bool batch );
-	void setStoppingConditions( int mEpochs, double dAccuracy);
+	void setStoppingConditions( int mEpochs, double dAccuracy, double endTime);
 	void useBatchLearning( bool flag ){ useBatch = flag; }
 	void enableLogging( const char* filename, int resolution );
 

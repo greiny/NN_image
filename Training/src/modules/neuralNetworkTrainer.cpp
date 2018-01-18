@@ -78,10 +78,11 @@ void neuralNetworkTrainer::setTrainingParameters( double lR, double m, bool batc
 /*******************************************************************
 * Set stopping parameters
 ********************************************************************/
-void neuralNetworkTrainer::setStoppingConditions( int mEpochs, double dAccuracy )
+void neuralNetworkTrainer::setStoppingConditions( int mEpochs, double dAccuracy, double endtime )
 {
 	maxEpochs = mEpochs;
-	desiredAccuracy = dAccuracy;	
+	desiredAccuracy = dAccuracy;
+	maxTime = endtime;	
 }
 /*******************************************************************
 * Enable training logging
@@ -156,7 +157,7 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 
 	//train network using training dataset for training and generalization dataset for testing
 	//--------------------------------------------------------------------------------------------------------
-	while (	( generalizationSetAccuracy <  desiredAccuracy ) && epoch < maxEpochs && time < 1800 )
+	while (	( generalizationSetAccuracy <  desiredAccuracy ) && epoch < maxEpochs && time < maxTime )
 	{			
 		//store previous accuracy
 		double previousTAccuracy = trainingSetAccuracy;
