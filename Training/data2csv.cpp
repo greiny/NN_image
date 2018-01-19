@@ -20,8 +20,7 @@ void dataEnlarge(vector<Mat>&, Mat&);
 
 int main (){
 	vector<Mat> trainx, testx;
-	Mat trainY = Mat::zeros(1, 645+343+328+176, CV_64FC1);
-	Mat testY = Mat::zeros(1,200+100+100, CV_64FC1);
+	Mat trainY = Mat::zeros(1, 845+443+328+276, CV_64FC1);
 
 	for ( int i=1 ; i <= 845 ; i++ )
 	{
@@ -92,16 +91,8 @@ int main (){
 			if (trainY.ATD(0, k) == 1) imgdata << trainY.ATD(0, k) << "," << (double)0 << endl;
 			else imgdata << trainY.ATD(0, k) << "," << (double)1 << endl;
 		}
-		for(int k = 0; k < testx.size(); k++)
-		{
-			for(int j = 0; j < testx[k].rows; j++)
-			{
-				for(int i = 0; i < testx[k].cols; i++) imgdata << (int)testx[k].data[j*testx[k].cols+i] << ",";
-			}
-			if (testY.ATD(0, k) == 1) imgdata << testY.ATD(0, k) << "," << (double)0 << endl;
-			else imgdata << testY.ATD(0, k) << "," << (double)1 << endl;
-		}		
 	}
+
 	imgdata.close();
 
 	trainx.clear();
