@@ -184,7 +184,7 @@ void neuralNetwork::enableLoggingWeight(const char* filename)
 	loggingEnabled = true;
 }
 
-bool neuralNetwork::saveWeights()
+bool neuralNetwork::saveWeights(double hTAcc, double hGAcc, long hEpoch)
 {
 	outputFile.open(outputFilename, ios::out);
 	if ( outputFile.is_open() && loggingEnabled )
@@ -215,7 +215,7 @@ bool neuralNetwork::saveWeights()
 				if ( i * nOutput + j + 1 != (nHidden[nLayer-1] + 1) * nOutput ) outputFile << ",";
 			}
 		}
-
+		outputFile << endl << "hTAcc," << hTAcc << ",hGAcc," << hGAcc << ",hEpoch," << hEpoch << ",";
 		//close file
 		outputFile.close();
 
