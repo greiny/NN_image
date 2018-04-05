@@ -154,7 +154,9 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 	//Time checking start!
 	float time = 0;
 	auto t0 = std::chrono::high_resolution_clock::now();
-
+	double highTrainingSetAccuracy = 0;
+	double highGeneralSetAccuracy = 0;
+	long highepoch = 0;
 	//train network using training dataset for training and generalization dataset for testing
 	//--------------------------------------------------------------------------------------------------------
 	while (	( generalizationSetAccuracy <  desiredAccuracy ) && epoch < maxEpochs && time < maxTime )
@@ -192,6 +194,14 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 			cout << " TSet Acc:" << trainingSetAccuracy << "%, MSE: " << trainingSetMSE ;
 			cout << " GSet Acc:" << generalizationSetAccuracy << "%, MSE: " << generalizationSetMSE << endl;
 		}
+		if ( highTrainingSetAccuracy < trainingSetAccuracy )
+		{
+			highTrainingSetAccuracy = trainingSetAccuracy;
+			highGeneralSetAccuracy = generalizationSetAccuracy;
+			highepoch = epoch;
+			NN->saveWeights();
+		}
+
 		time = std::chrono::duration<float>(t1-t0).count();
 
 		//once training set is complete increment epoch
@@ -203,9 +213,9 @@ void neuralNetworkTrainer::trainNetwork( trainingDataSet* tSet )
 	logFile << epoch << "," << trainingSetAccuracy << "," << generalizationSetAccuracy << "," << validationSetAccuracy << "," << trainingSetMSE << "," << generalizationSetMSE << "," << validationSetMSE << endl;
 
 	//out validation accuracy and MSE
-	cout << endl << "Training Complete!!! - > Elapsed Epochs: " << epoch << endl;
-	cout << " Validation Set Accuracy: " << validationSetAccuracy << endl;
-	cout << " Validation Set MSE: " << validationSetMSE << endl << endl;
+	cout << endl << "Training Complete!!! - > Elapsed Epochs: " << highepoch << endl;
+	cout << " Training Set Accuracy: " << highTrainingSetAccuracy << endl;
+	cout << " Generalization Set Accuracy: " << highGeneralSetAccuracy << endl;
 }
 
 /*******************************************************************

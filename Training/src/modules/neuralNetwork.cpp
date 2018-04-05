@@ -1,9 +1,4 @@
 //standard includes
-#include <iostream>
-#include <vector>
-#include <fstream>
-#include <math.h>
-#include <string.h>
 
 #include "neuralNetwork.h"
 
@@ -182,16 +177,19 @@ cout << "System needs " << num_weight << " and " << weights.size() << " put in "
 /*******************************************************************
 * Save Neuron Weights
 ********************************************************************/
-bool neuralNetwork::saveWeights(const char* filename)
+void neuralNetwork::enableLoggingWeight(const char* filename)
 {
 	//open file for reading
-	fstream outputFile;
-	outputFile.open(filename, ios::out);
+	outputFilename = filename;
+	loggingEnabled = true;
+}
 
-	if ( outputFile.is_open() )
+bool neuralNetwork::saveWeights()
+{
+	outputFile.open(outputFilename, ios::out);
+	if ( outputFile.is_open() && loggingEnabled )
 	{
 		outputFile.precision(10); // # of floating point
-
 		//output weights
 		for ( int i=0; i <= nInput; i++ )  // '=' means loop including bias neuron
 		{
@@ -218,17 +216,14 @@ bool neuralNetwork::saveWeights(const char* filename)
 			}
 		}
 
-		//print success
-		cout << endl << "Neuron weights saved to '" << filename << "'" << endl;
-
 		//close file
 		outputFile.close();
-		
+
 		return true;
 	}
-	else 
+	else
 	{
-		cout << endl << "Error - Weight output file '" << filename << "' could not be created: " << endl;
+		cout << endl << "Error - Weight output file '" << outputFilename << "' could not be created: " << endl;
 		return false;
 	}
 }

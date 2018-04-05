@@ -8,6 +8,11 @@
 #ifndef NNetwork
 #define NNetwork
 
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <math.h>
+#include <string.h>
 #include "dataReader.h"
 
 using namespace std;
@@ -35,6 +40,11 @@ private:
 	vector <double**> wHiddenHidden; // 3D-pointer [#layer][#prev_neuron][#next_neuron]
 	double** wInputHidden;
 	double** wHiddenOutput;
+
+	const char* outputFilename;
+	bool loggingEnabled;
+	fstream outputFile;
+
 	//Friends
 	//--------------------------------------------------------------------------------------------
 	friend neuralNetworkTrainer;
@@ -49,8 +59,9 @@ public:
 	~neuralNetwork();
 
 	//weight operations
+	void enableLoggingWeight(const char* filename);
 	bool loadWeights(const char* inputFilename);
-	bool saveWeights(const char* outputFilename);
+	bool saveWeights();
 	double* feedForwardPattern( double* pattern );
 	double getSetAccuracy( std::vector<dataEntry*>& set );
 	void getRegression( std::vector<dataEntry*>& set, int i );
