@@ -444,7 +444,7 @@ convAndPooling4Test(const vector<Mat> &x, const vector<Cvl> &CLayers, vector<vec
                 {
                     Mat temp = rot90(CLayers[cl].layer[k].W, 2);
                     Mat tmpconv = convCalc(res[s][m], temp, CONV_SAME);
-                    if (s%10 == 1) saveConvImage(s,k, tmpconv, "log/");
+                    if (s%10 == 1) saveConvImage(cl,s,k, tmpconv, "log/");
                     tmpconv += CLayers[cl].layer[k].b;
                     tmpconv = nonLinearity(tmpconv);
                     tpvec[s].push_back(tmpconv);

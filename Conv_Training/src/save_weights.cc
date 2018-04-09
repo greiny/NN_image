@@ -75,10 +75,10 @@ saveConvKernel(const vector<Cvl> &CLayers, string path){
 }
 
 void
-saveConvImage(const int nsample, const int nkernel, const Mat conv, string path){
+saveConvImage(const int ncls, const int nsample, const int nkernel, const Mat conv, string path){
     string tmp = path;
     mkdir(tmp.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	string str = tmp + "/layer_" + std::to_string(0);
+	string str = tmp + "/layer_" + std::to_string(ncls);
 	mkdir(str.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	string str2 = str + "/kernel_" + std::to_string(nkernel);
 	mkdir(str2.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
