@@ -531,12 +531,14 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, int sKernel, int n
 		Mat tmpconv = convCalc(img, temp, CONV_SAME);
 		tmpconv = nonLinearity(tmpconv,NL_RELU);
 		conv.push_back(tmpconv);
+		temp.release(); tmpconv.release();
 	}
 
 	for(int k = 0; k < Kernelset.size(); k++)
 	{
 		Mat temp = conv[k];
 		conv[k] = Pooling(temp, pdim, pdim, POOL_MAX);
+		temp.release();
 	}
 
 	double* conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
@@ -556,9 +558,7 @@ double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
 	vector<Mat> conv;
 
 	//Normalization
-	int rows = sqrt(sKernel);
-	Mat img(rows,rows,CV_64FC1);
-	pattern.convertTo(img, CV_64FC1, 1.0/255, 0);
+	pattern.convertTo(pattern, CV_64FC1, 1.0/255, 0);
 
 	//Kernel loaded
     for(int k = 0; k < Kernels.size(); k++)
@@ -572,15 +572,17 @@ double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
 	for(int k = 0; k < Kernelset.size(); k++)
 	{
 		Mat temp = rot90(Kernelset[k], 2);
-		Mat tmpconv = convCalc(img, temp, CONV_SAME);
+		Mat tmpconv = convCalc(pattern, temp, CONV_SAME);
 		tmpconv = nonLinearity(tmpconv,NL_RELU);
 		conv.push_back(tmpconv);
+		temp.release(); tmpconv.release();
 	}
 
 	for(int k = 0; k < Kernelset.size(); k++)
 	{
 		Mat temp = conv[k];
 		conv[k] = Pooling(temp, pdim, pdim, POOL_MAX);
+		temp.release();
 	}
 
 	double* conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
@@ -590,6 +592,7 @@ double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
 		for(int j = 0; j < conv[k].rows; j++)
 			for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
 	}
+	conv.clear();
 	return conv_pattern;
 }
 
