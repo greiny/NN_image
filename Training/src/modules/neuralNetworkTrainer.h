@@ -53,6 +53,7 @@ private:
 	vector<double**> deltaHiddenHidden;
 	double** deltaInputHidden;
 	double** deltaHiddenOutput;
+	double** deltaInputOutput;
 
 	//error gradients
 	vector<double*> hiddenErrorGradients;

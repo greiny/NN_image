@@ -19,83 +19,60 @@ void addWhiteNoise(const Mat &, Mat &, double);
 void dataEnlarge(vector<Mat>&, Mat&);
 
 int main (){
-	vector<Mat> trainx, testx;
-	Mat trainY = Mat::zeros(1, 845+443+328+276, CV_64FC1);
+	vector<Mat> trainX;
+	Mat trainY = Mat::zeros(845+338, 2, CV_64FC1);
 
 	for ( int i=1 ; i <= 845 ; i++ )
 	{
 		Mat buf;
 		char file_name[255];
-		sprintf(file_name,"image/img(%d).png",i);
+		sprintf(file_name,"target/o/o(%d).png",i);
 		buf = imread(file_name,0);
-		resize(buf,buf,Size(28,28));
-		equalizeHist(buf,buf);
+		//resize(buf,buf,Size(28,28));
+		//equalizeHist(buf,buf);
 		//Canny(buf, buf, 80, 160, 3);
-		trainx.push_back(buf);
+		trainX.push_back(buf);
 	}
 
-	for ( int i=1 ; i <= 443 ; i++ )
+	for ( int i=1 ; i <= 338 ; i++ )
 	{
 		Mat buf;
 		char file_name[255];
-		sprintf(file_name,"image/neural_o (%d).png",i);
+		sprintf(file_name,"target/x/x(%d).png",i);
 		buf = imread(file_name,0);
-		resize(buf,buf,Size(28,28));
-		equalizeHist(buf,buf);
+		//resize(buf,buf,Size(28,28));
+		//equalizeHist(buf,buf);
 		//Canny(buf, buf, 80, 160, 3);
-		trainx.push_back(buf);
+		trainX.push_back(buf);
 	}
 
-	for ( int i=1 ; i <= 328 ; i++ )
-	{
-		Mat buf;
-		char file_name[255];
-		sprintf(file_name,"image/(%d).png",i);
-		buf = imread(file_name,0);
-		resize(buf,buf,Size(28,28));
-		equalizeHist(buf,buf);
-		//Canny(buf, buf, 80, 160, 3);
-		trainx.push_back(buf);
-	}
-
-	for ( int i=1 ; i <= 276 ; i++ )
-	{
-		Mat buf;
-		char file_name[255];
-		sprintf(file_name,"image/basic_x (%d).png",i);
-		buf = imread(file_name,0);
-		resize(buf,buf,Size(28,28));
-		equalizeHist(buf,buf);
-		//Canny(buf, buf, 80, 160, 3);
-		trainx.push_back(buf);
-	}
-
-	for(int j = 0; j < 845+443+328+276; j++){
+	for(int j = 0; j < 845+338; j++){
 		unsigned char temp = 1;
-		if (j<845+443) trainY.ATD(0, j) = (double)temp;
-		else trainY.ATD(0, j) = 0;
+		if (j<845) { trainY.ATD(j, 0) = (double)temp; trainY.ATD(j, 1) = 0; }
+		else { trainY.ATD(j, 0) = 0; trainY.ATD(j, 1) = (double)temp;}
 	}
 
-	dataEnlarge(trainx, trainY);
+	dataEnlarge(trainX, trainY);
 
 	ofstream imgdata;
 	imgdata.open("imgdata.csv",ios::out);
 	if ( imgdata.is_open() )
 	{
-		for(int k = 0; k < trainx.size(); k++)
+		for(int k = 0; k < trainX.size(); k++)
 		{
-			for(int j = 0; j < trainx[k].rows; j++)
-			{
-				for(int i = 0; i < trainx[k].cols; i++) imgdata << (int)trainx[k].data[j*trainx[k].cols+i] << ",";
-			}
-			if (trainY.ATD(0, k) == 1) imgdata << trainY.ATD(0, k) << "," << (double)0 << endl;
-			else imgdata << trainY.ATD(0, k) << "," << (double)1 << endl;
+			resize(trainX[k],trainX[k],Size(28,28));
+			for(int j = 0; j < trainX[k].rows; j++)
+				for(int i = 0; i < trainX[k].cols; i++)
+					imgdata << (int)trainX[k].data[j*trainX[k].cols+i] << ",";
+			for(int j = 0; j < trainY.cols; j++) imgdata << trainY.ATD(k, j) << ",";
+			imgdata << endl;	
 		}
+
 	}
 
 	imgdata.close();
 
-	trainx.clear();
+	trainX.clear();
 	trainY.release();
 
 	return 0;
@@ -144,42 +121,43 @@ addWhiteNoise(const Mat &_from, Mat &_to, double stdev){
 void 
 dataEnlarge(vector<Mat>& data, Mat& label){
     int nSamples = data.size();
-    Mat tmp;
+  
     /*
     // flip left right
     for(int i = 0; i < nSamples; i++){
         fliplr(data[i], tmp);
         data.push_back(tmp);
     }
-    // flip up down
-    for(int i = 0; i < nSamples; i++){
-        flipud(data[i], tmp);
-        data.push_back(tmp);
-    }
+    
     // flip left right up down
     for(int i = 0; i < nSamples; i++){
         flipudlr(data[i], tmp);
         data.push_back(tmp);
     }
-
-    // add white noise
+// add white noise
     for(int i = 0; i < nSamples; i++){
         Mat tmp;
         addWhiteNoise(data[i], tmp, 0.05);
         data.push_back(tmp);
     }
-    */
 
-    // rotate
+
+*/
+    // rotate -10 degree
     for(int i = 0; i < nSamples; i++){
-    	for(int j = -17 ; j < 19; j++){
-			rotateNScale(data[i], tmp, j*10, 1.005);
-			data.push_back(tmp);
-    	}
+        Mat tmp;
+        rotateNScale(data[i], tmp, -10, 1.2);
+        data.push_back(tmp);
     }
-
-    // copy label matrix    ;
-    repeat(label, 1, 37, tmp);
+    // rotate +10 degree
+    for(int i = 0; i < nSamples; i++){
+        Mat tmp;
+        rotateNScale(data[i], tmp, 10, 1.2);
+        data.push_back(tmp);
+    }
+    
+    // copy label matrix    
+    cv::Mat tmp;
+    repeat(label, 3, 1, tmp); 
     label = tmp;
 }
-

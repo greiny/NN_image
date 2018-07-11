@@ -116,14 +116,14 @@ public:
 	dataReader(): creationApproach(NONE), numTrainingSets(-1) {}
 	~dataReader();
 	bool loadDataFile4Train( const char* filename, int nI, int nT, float gratio, float tratio ); //maxmin->normalization
-	bool loadImageFile4Train( const char* filename, int nI, int nT, float gratio, float tratio, int , int, int ); //normalization->convolution and pooling->ReLU
-	void loadImage4Test( const cv::Mat frame,int,int); //normalization->convolution and pooling->ReLU
+	bool loadImageFile4Train( const char* filename, int nI, int nT, float gratio, float tratio, int , int, int, bool); //normalization->convolution and pooling->ReLU
+	void loadImage4Test( const cv::Mat frame,int,int, bool); //normalization->convolution and pooling->ReLU
 	bool maxmin( const char* filename);
 	void setCreationApproach( int approach, double param1 = -1, double param2 = -1 );
 	int getNumTrainingSets();
 	cv::Mat Pooling(const cv::Mat &, int , int , int );
-	double* ConvNPooling(double *pattern,int , int , int,int);
-	double* ConvNPooling(cv::Mat pattern, int , int, int);
+	double* ConvNPooling(double *pattern,int , int , int, int, bool);
+	double* ConvNPooling(cv::Mat pattern, int , int, int, bool);
 	bool loadKernels(const char* inputFilename,int sKernel,int nKernel);
 	
 	trainingDataSet* getTrainingDataSet();
@@ -139,7 +139,7 @@ private:
 	void createWindowingDataSet();	
 	
 	void processLine( std::string &line );
-	void processMat( cv::Mat frame );
+	void processMat( cv::Mat frame, bool GAP );
 	void processLine4maxmin( std::string &line );
 	void processLine4Image( std::string &line );
 };

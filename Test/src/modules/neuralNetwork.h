@@ -40,6 +40,7 @@ private:
 	vector <double**> wHiddenHidden; // 3D-pointer [#layer][#prev_neuron][#next_neuron]
 	double** wInputHidden;
 	double** wHiddenOutput;
+	double** wInputOutput;
 
 	const char* outputFilename;
 	bool loggingEnabled;
@@ -61,7 +62,7 @@ public:
 	//weight operations
 	void enableLoggingWeight(const char* filename);
 	bool loadWeights(const char* inputFilename);
-	bool saveWeights();
+	bool saveWeights(double hTAcc, double hGAcc, long hEpoch);
 	double* feedForwardPattern( double* pattern );
 	double getSetAccuracy( std::vector<dataEntry*>& set );
 	void getRegression( std::vector<dataEntry*>& set, int i );

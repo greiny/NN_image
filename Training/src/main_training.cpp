@@ -29,11 +29,11 @@ int main()
 	
 	//Training condition
 	int sImage = 28*28;
-	int nInput = (int)pow((int)sqrt(sImage)/pdim,2)*nKernel;
-	vector<int> nLayer{64};
+	int nInput = nKernel;//(int)pow((int)sqrt(sImage)/pdim,2)*nKernel;
+	vector<int> nLayer{};
 	int nOutput = 2;
 
-	int max_epoch = 1000000;
+	int max_epoch = 10000000;
 	double accuracy = 99.9;
 	double max_time = 300;
 
@@ -45,7 +45,7 @@ int main()
 	float tRatio = 0.7;
 	float vRatio = 0.3;
 	d.loadKernels("kernel4.csv",sKernel,nKernel);
-	d.loadImageFile4Train("image_data/imgdata.csv",sImage,nOutput,tRatio,vRatio,sKernel,nKernel,pdim);
+	d.loadImageFile4Train("image_data/imgdata2.csv",sImage,nOutput,tRatio,vRatio,sKernel,nKernel,pdim,true);
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network

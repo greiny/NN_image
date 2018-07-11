@@ -40,6 +40,7 @@ private:
 	vector <double**> wHiddenHidden; // 3D-pointer [#layer][#prev_neuron][#next_neuron]
 	double** wInputHidden;
 	double** wHiddenOutput;
+	double** wInputOutput;
 
 	const char* outputFilename;
 	bool loggingEnabled;

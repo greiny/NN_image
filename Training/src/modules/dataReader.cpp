@@ -120,7 +120,7 @@ bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float
 	}
 }
 
-bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,float tratio, float gratio , int sK, int nK, int pdim)
+bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,float tratio, float gratio , int sK, int nK, int pdim, bool GAP)
 {
 	//clear any previous data
 	for (int i=0; i < (int) data.size(); i++ ) delete data[i];
@@ -155,7 +155,7 @@ bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,floa
 		// normalize and convolve data
 		for(int jj=0; jj < data.size(); jj++)
 		{
-			data[jj]-> pattern = ConvNPooling(data[jj]->pattern,sImage,sKernel,nKernel,pdim);
+			data[jj]-> pattern = ConvNPooling(data[jj]->pattern,sImage,sKernel,nKernel,pdim,GAP);
 		}
 
 		//shuffle data
@@ -184,7 +184,7 @@ bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,floa
 	}
 }
 
-void dataReader::loadImage4Test(const Mat frame,int sI, int nT)
+void dataReader::loadImage4Test(const Mat frame,int sI, int nT, bool GAP)
 {
 	//clear any previous data
 	for (int i=0; i < (int) data.size(); i++ ) delete data[i];		
@@ -193,7 +193,7 @@ void dataReader::loadImage4Test(const Mat frame,int sI, int nT)
 
 	sImage = sI;
 	nTargets = nT;
-	processMat(frame);
+	processMat(frame,GAP);
 
 	//validation set
 	trainingDataEndIndex = (int)0;
@@ -235,13 +235,13 @@ bool dataReader::maxmin( const char* filename)
 * Processes a single line from the data file
 ********************************************************************/
 
-void dataReader::processMat( const Mat frame )
+void dataReader::processMat( const Mat frame, bool GAP )
 {
 	//create new pattern and target
 	double* pattern = new double[sImage];
 	double* target = new double[nTargets];
 	frame.convertTo(frame, CV_64FC1, 1.0/255, 0);
-	pattern = ConvNPooling(frame,sKernel,nKernel,pdim);
+	pattern = ConvNPooling(frame,sKernel,nKernel,pdim,GAP);
 	for (int i=0; i<nTargets; i++) if ( i < sImage ) target[i] = 0;
 
 	//add to records
@@ -507,7 +507,7 @@ dataReader::Pooling(const Mat &M, int pVert, int pHori, int poolingMethod){
     return res;
 }
 
-double* dataReader::ConvNPooling(double *pattern, int sImage, int sKernel, int nKernel, int pdim)
+double* dataReader::ConvNPooling(double *pattern, int sImage, int sKernel, int nKernel, int pdim, bool GAP)
 {
 	int rows = (int)sqrt(sImage);
 	Mat img(rows,rows,CV_64FC1);
@@ -541,18 +541,30 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, int sKernel, int n
 		temp.release();
 	}
 
-	double* conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
-	for(int k = 0; k < Kernelset.size(); k++)
-	{
-		int nPixel = conv[k].cols*conv[k].rows;
-		for(int j = 0; j < conv[k].rows; j++)
-			for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
+	double* conv_pattern;
+	if (GAP==true) {
+		conv_pattern = (new(double[Kernelset.size()]));
+		for(int k = 0; k < Kernelset.size(); k++)
+		{
+			Scalar meanVal = mean(conv[k]);
+			double matMean = (double)meanVal.val[0];
+			conv_pattern[k] = matMean;
+		}
+	}
+	else {
+		conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
+		for(int k = 0; k < Kernelset.size(); k++)
+		{
+			int nPixel = conv[k].cols*conv[k].rows;
+			for(int j = 0; j < conv[k].rows; j++)
+				for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
+		}
 	}
 	conv.clear();
 	return conv_pattern;
 }
 
-double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
+double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim, bool GAP)
 {
    	vector<Mat> Kernelset;
 	vector<Mat> conv;
@@ -585,13 +597,26 @@ double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim)
 		temp.release();
 	}
 
-	double* conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
-	for(int k = 0; k < Kernelset.size(); k++)
-	{
-		int nPixel = conv[k].cols*conv[k].rows;
-		for(int j = 0; j < conv[k].rows; j++)
-			for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
+	double* conv_pattern;
+	if (GAP==true) {
+		conv_pattern = (new(double[Kernelset.size()]));
+		for(int k = 0; k < Kernelset.size(); k++)
+		{
+			Scalar meanVal = mean(conv[k]);
+			double matMean = (double)meanVal.val[0];
+			conv_pattern[k] = matMean;
+		}
 	}
+	else {
+		conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
+		for(int k = 0; k < Kernelset.size(); k++)
+		{
+			int nPixel = conv[k].cols*conv[k].rows;
+			for(int j = 0; j < conv[k].rows; j++)
+				for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
+		}
+	}
+
 	conv.clear();
 	return conv_pattern;
 }

@@ -57,20 +57,17 @@ float neural_thres = 0.9;
 float prob = 0;
 int num = 0;
 
-VideoCapture capture("out.avi");
-VideoWriter video("CNN4.avi",CV_FOURCC('M','J','P','G'),15, Size(336*3+10*2,188+50),true);
+VideoCapture capture("out2.avi");
+VideoWriter video("CNN.avi",CV_FOURCC('M','J','P','G'),15, Size(336*3+10*2,188+50),true);
+char* kernel_file = "log/kernel4.csv";
+char* weights_file = "log/weights0.txt";
 
 int main(int argc, const char* argv[])
 {
 	// Loads a csv file of weight matrix data
-	char* kernel_file = "log/kernel4.csv";
-	dR.loadKernels(kernel_file,sKernel,nKernel);
-
-	// Loads a csv file of weight matrix data
-	char* weights_file = "log/weights37.txt";
-	nn.loadWeights(weights_file);
-
-	main_ellipse();
+	if (dR.loadKernels(kernel_file,sKernel,nKernel))
+		if(nn.loadWeights(weights_file))
+			main_ellipse();
     return 0;
 }
 
