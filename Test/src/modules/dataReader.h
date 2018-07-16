@@ -35,6 +35,15 @@ public:
 
 };
 
+class ConvLayer
+{
+public:
+	int nKernel;
+	int sKernel;
+	int pdim;
+	std::vector<cv::Mat> Kernels; //[nKernel][y][x]
+};
+
 /*******************************************************************
 * stores a reference item
 ********************************************************************/
@@ -44,11 +53,7 @@ public:
 
 	double p_max;	    //maximum pattern data
 	double p_min;		//minimum pattern data
-
-public:
-
 	reference(double px, double pn): p_max(px), p_min(pn) {}
-
 };
 
 /*******************************************************************
@@ -86,14 +91,10 @@ private:
 	//data storage
 	std::vector<dataEntry*> data;
 	std::vector<reference*> ref;
+	std::vector<ConvLayer> CLayer;
 	int nInputs;
 	int nTargets;
 	int sImage;
-	int sKernel;
-	int nKernel;
-	int pdim;
-
-	std::vector <double**> Kernels;
 
 	//current data set
 	trainingDataSet tSet;
@@ -116,15 +117,15 @@ public:
 	dataReader(): creationApproach(NONE), numTrainingSets(-1) {}
 	~dataReader();
 	bool loadDataFile4Train( const char* filename, int nI, int nT, float gratio, float tratio ); //maxmin->normalization
-	bool loadImageFile4Train( const char* filename, int nI, int nT, float gratio, float tratio, int , int, int, bool); //normalization->convolution and pooling->ReLU
+	bool loadImageFile4Train( const char* filename, int nI, int nT, float gratio, float tratio, bool); //normalization->convolution and pooling->ReLU
 	void loadImage4Test( const cv::Mat frame,int,int, bool); //normalization->convolution and pooling->ReLU
 	bool maxmin( const char* filename);
 	void setCreationApproach( int approach, double param1 = -1, double param2 = -1 );
 	int getNumTrainingSets();
 	cv::Mat Pooling(const cv::Mat &, int , int , int );
-	double* ConvNPooling(double *pattern,int , int , int, int, bool);
-	double* ConvNPooling(cv::Mat pattern, int , int, int, bool);
-	bool loadKernels(const char* inputFilename,int sKernel,int nKernel);
+	double* ConvNPooling(double *pattern,int, bool);
+	double* ConvNPooling(cv::Mat pattern, bool);
+	bool loadKernels(const char* inputFilename,std::vector<ConvLayer> CLayer);
 	
 	trainingDataSet* getTrainingDataSet();
 	std::vector<dataEntry*>& getAllDataEntries();

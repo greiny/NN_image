@@ -4,7 +4,6 @@
 * Bobby Anguelov - takinginitiative.wordpress.com (2008)
 * MSN & email: banguelov@cs.up.ac.za
 *********************************************************************/
-
 //standard libraries
 #include <iostream>
 #include <ctime>
@@ -22,34 +21,49 @@ int main()
 {		
 	//seed random number generator
 	srand( (unsigned int) time(0) );
-
-	int nKernel = 4;
-	int sKernel = 7;
-	int pdim = 2;
 	
 	//Training condition
-	int sImage = 28*28;
-	int nInput = nKernel;//(int)pow((int)sqrt(sImage)/pdim,2)*nKernel;
-	vector<int> nLayer{};
-	int nOutput = 2;
-
 	int max_epoch = 10000000;
 	double accuracy = 99.9;
 	double max_time = 300;
-
 	float lr = 0.001;
 	float momentum = 0.9;
+	float tRatio = 0.7;
+	float vRatio = 0.3;
+
+	//Layer Construction
+	int sImage = 28*28;
+	int nOutput = 2;
+	vector<ConvLayer> CLayer;
+	ConvLayer CLayer1, CLayer2;
+		CLayer1.nKernel = 4;
+		CLayer1.sKernel = 7;
+		CLayer1.pdim = 2;
+		CLayer.push_back(CLayer1);
+		//CLayer2.nKernel = 7;
+		//CLayer2.sKernel = 3;
+		//CLayer2.pdim = 2;
+		//CLayer.push_back(CLayer2);
+	vector<int> FCLayer{}; // #neuron -> FCLayer{256,64}
+	bool GAP = true;
+
+	int nInput = 1;
+	for(int i=0; i<CLayer.size(); i++) nInput = nInput*CLayer[i].nKernel;
+	if (GAP==false){
+		int sInput = 1;
+		for(int i=0; i<CLayer.size(); i++) sInput = sInput*CLayer[i].pdim;
+		sInput = (int)pow((int)(sqrt(sImage)/sInput),2);
+		nInput = sInput*nInput;
+	}
 
 	//create data set reader and load data file
 	dataReader d;
-	float tRatio = 0.7;
-	float vRatio = 0.3;
-	d.loadKernels("kernel4.csv",sKernel,nKernel);
-	d.loadImageFile4Train("image_data/imgdata2.csv",sImage,nOutput,tRatio,vRatio,sKernel,nKernel,pdim,true);
+	d.loadKernels("kernel4.csv",CLayer);
+	d.loadImageFile4Train("image_data/imgdata2.csv",sImage,nOutput,tRatio,vRatio,GAP);
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network
-	neuralNetwork nn(nInput,nLayer,nOutput);
+	neuralNetwork nn(nInput,FCLayer,nOutput);
 
 	//save the Training Condition
 	char file_name[255];
@@ -72,12 +86,15 @@ int main()
 	logTrain.open(file_name,ios::out);
 	if ( logTrain.is_open() )
 	{
-		logTrain << "#Input" << "," << nInput << endl;
-		logTrain << "#Layer" << "," << nLayer.size() << endl;
-		for (int i=0; i<nLayer.size(); i++) logTrain << "#Neuron["<< i << "]," << nLayer[i] << endl;
-		logTrain << "#Output" << "," << nOutput << endl;
-		logTrain << "#TrainingSet" << "," << (int)d.trainingDataEndIndex << endl;
-		logTrain << "#ValidationSet" << "," << (int)((d.trainingDataEndIndex/tRatio)*vRatio) << endl;
+		logTrain << "Input" << "," << nInput << endl;
+		logTrain << "ConvLayer" << "," << CLayer.size() << endl;
+		for (int i=0; i<CLayer.size(); i++)
+			logTrain << "Kernel["<< i << "]," << CLayer[i].nKernel << "," << CLayer[i].sKernel << "x" << CLayer[i].sKernel << ", "<< CLayer[i].pdim << endl;
+		logTrain << "FCLayer" << "," << FCLayer.size() << endl;
+		for (int i=0; i<FCLayer.size(); i++) logTrain << "Neuron["<< i << "]," << FCLayer[i] << endl;
+		logTrain << "Output" << "," << nOutput << endl;
+		logTrain << "TrainingSet" << "," << (int)d.trainingDataEndIndex << endl;
+		logTrain << "ValidationSet" << "," << (int)((d.trainingDataEndIndex/tRatio)*vRatio) << endl;
 		logTrain << "Accuracy(%)" << "," << accuracy << endl;
 		logTrain << "Learning_rate" << "," << lr << endl;
 		logTrain << "Momentum" << "," << momentum << endl;

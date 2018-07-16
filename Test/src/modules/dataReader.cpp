@@ -120,7 +120,7 @@ bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float
 	}
 }
 
-bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,float tratio, float gratio , int sK, int nK, int pdim, bool GAP)
+bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,float tratio, float gratio, bool GAP)
 {
 	//clear any previous data
 	for (int i=0; i < (int) data.size(); i++ ) delete data[i];
@@ -155,7 +155,7 @@ bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,floa
 		// normalize and convolve data
 		for(int jj=0; jj < data.size(); jj++)
 		{
-			data[jj]-> pattern = ConvNPooling(data[jj]->pattern,sImage,sKernel,nKernel,pdim,GAP);
+			data[jj]-> pattern = ConvNPooling(data[jj]->pattern,sImage,GAP);
 		}
 
 		//shuffle data
@@ -241,7 +241,7 @@ void dataReader::processMat( const Mat frame, bool GAP )
 	double* pattern = new double[sImage];
 	double* target = new double[nTargets];
 	frame.convertTo(frame, CV_64FC1, 1.0/255, 0);
-	pattern = ConvNPooling(frame,sKernel,nKernel,pdim,GAP);
+	pattern = ConvNPooling(frame,GAP);
 	for (int i=0; i<nTargets; i++) if ( i < sImage ) target[i] = 0;
 
 	//add to records
@@ -507,128 +507,115 @@ dataReader::Pooling(const Mat &M, int pVert, int pHori, int poolingMethod){
     return res;
 }
 
-double* dataReader::ConvNPooling(double *pattern, int sImage, int sKernel, int nKernel, int pdim, bool GAP)
+double* dataReader::ConvNPooling(double *pattern, int sImage, bool GAP)
 {
 	int rows = (int)sqrt(sImage);
 	Mat img(rows,rows,CV_64FC1);
 	for(int j = 0; j < rows; j++) for(int i = 0; i < rows; i++) img.ATD(j, i) = (double)pattern[j*rows+i];
 	img.convertTo(img, CV_64FC1, 1.0/255, 0);
 
-   	vector<Mat> Kernelset;
-	vector<Mat> conv;
-    for(int k = 0; k < Kernels.size(); k++)
-	{
-		Mat buf(sKernel,sKernel,CV_64FC1);
-		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.ATD(j,i) = (double) Kernels[k][j][i];
-		Kernelset.push_back(buf);
-		buf.release();
-	}
-
-
-	for(int k = 0; k < Kernelset.size(); k++)
-	{
-		Mat temp = rot90(Kernelset[k], 2);
-		Mat tmpconv = convCalc(img, temp, CONV_SAME);
-		tmpconv = nonLinearity(tmpconv,NL_RELU);
-		conv.push_back(tmpconv);
-		temp.release(); tmpconv.release();
-	}
-
-	for(int k = 0; k < Kernelset.size(); k++)
-	{
-		Mat temp = conv[k];
-		conv[k] = Pooling(temp, pdim, pdim, POOL_MAX);
-		temp.release();
-	}
-
+	vector<vector<Mat>> conv(CLayer.size()+1);
+	conv[0].push_back(img);
 	double* conv_pattern;
-	if (GAP==true) {
-		conv_pattern = (new(double[Kernelset.size()]));
-		for(int k = 0; k < Kernelset.size(); k++)
+	for(int l=0; l<CLayer.size(); l++){
+	// Kernel loaded
+	   	vector<Mat> Kernelset;
+		for(int k = 0; k < CLayer[l].nKernel; k++) Kernelset.push_back(CLayer[0].Kernels[k]);
+	// Convolution and Pooling computation
+		for(int n = 0; n < conv[l].size(); n++)
 		{
-			Scalar meanVal = mean(conv[k]);
+			for(int k = 0; k < Kernelset.size(); k++)
+			{
+				Mat temp = rot90(Kernelset[k], 2);
+				Mat tmpconv = convCalc(conv[l][n], temp, CONV_SAME);
+				tmpconv = nonLinearity(tmpconv,NL_RELU);
+				tmpconv = Pooling(tmpconv, CLayer[l].pdim, CLayer[l].pdim, POOL_MAX);
+				conv[l+1].push_back(tmpconv); // conv[l+1].size() == Kernelset.size()
+				temp.release(); tmpconv.release();
+			}
+		}
+		Kernelset.clear();
+	}
+
+	if (GAP==true) {
+		conv_pattern = (new(double[conv[CLayer.size()].size()]));
+		for(int k = 0; k < conv[CLayer.size()].size(); k++)
+		{
+			Scalar meanVal = mean(conv[CLayer.size()][k]);
 			double matMean = (double)meanVal.val[0];
 			conv_pattern[k] = matMean;
 		}
 	}
 	else {
-		conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
-		for(int k = 0; k < Kernelset.size(); k++)
-		{
-			int nPixel = conv[k].cols*conv[k].rows;
-			for(int j = 0; j < conv[k].rows; j++)
-				for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
-		}
+		int nPixel = conv[CLayer.size()][0].cols*conv[CLayer.size()][0].rows;
+		conv_pattern = (new(double[conv[CLayer.size()].size()*nPixel]));
+		for(int k = 0; k < conv[CLayer.size()].size(); k++)
+			for(int j = 0; j < (int)sqrt(nPixel); j++)
+				for(int i = 0; i < (int)sqrt(nPixel); i++)
+					conv_pattern[k*nPixel+j*conv[CLayer.size()][k].rows+i] = conv[CLayer.size()][k].ATD(j,i);
 	}
+	for(int k = 0; k < conv.size(); k++) conv[k].clear();
 	conv.clear();
 	return conv_pattern;
 }
 
-double* dataReader::ConvNPooling(Mat pattern, int sKernel, int nKernel,int pdim, bool GAP)
+double* dataReader::ConvNPooling(Mat pattern, bool GAP)
 {
-   	vector<Mat> Kernelset;
-	vector<Mat> conv;
-
-	//Normalization
+	// Normalization
 	pattern.convertTo(pattern, CV_64FC1, 1.0/255, 0);
-
-	//Kernel loaded
-    for(int k = 0; k < Kernels.size(); k++)
-	{
-		Mat buf(sKernel,sKernel,CV_64FC1);
-		for(int i = 0; i < sKernel; i++) for(int j = 0; j < sKernel; j++) buf.ATD(j,i) = (double) Kernels[k][j][i];
-		Kernelset.push_back(buf);
-		buf.release();
-	}
-
-	for(int k = 0; k < Kernelset.size(); k++)
-	{
-		Mat temp = rot90(Kernelset[k], 2);
-		Mat tmpconv = convCalc(pattern, temp, CONV_SAME);
-		tmpconv = nonLinearity(tmpconv,NL_RELU);
-		conv.push_back(tmpconv);
-		temp.release(); tmpconv.release();
-	}
-
-	for(int k = 0; k < Kernelset.size(); k++)
-	{
-		Mat temp = conv[k];
-		conv[k] = Pooling(temp, pdim, pdim, POOL_MAX);
-		temp.release();
-	}
+	vector<vector<Mat>> conv(CLayer.size()+1);
+	conv[0].push_back(pattern);
 
 	double* conv_pattern;
-	if (GAP==true) {
-		conv_pattern = (new(double[Kernelset.size()]));
-		for(int k = 0; k < Kernelset.size(); k++)
+	for(int l=0; l<CLayer.size(); l++){
+	// Kernel loaded
+	   	vector<Mat> Kernelset;
+		for(int k = 0; k < CLayer[l].nKernel; k++) Kernelset.push_back(CLayer[0].Kernels[k]);
+	// Convolution and Pooling computation
+		for(int n = 0; n < conv[l].size(); n++)
 		{
-			Scalar meanVal = mean(conv[k]);
+			for(int k = 0; k < Kernelset.size(); k++)
+			{
+				Mat temp = rot90(Kernelset[k], 2);
+				Mat tmpconv = convCalc(conv[l][n], temp, CONV_SAME);
+				tmpconv = nonLinearity(tmpconv,NL_RELU);
+				tmpconv = Pooling(tmpconv, CLayer[l].pdim, CLayer[l].pdim, POOL_MAX);
+				conv[l+1].push_back(tmpconv); // conv[l+1].size() == Kernelset.size()
+				temp.release(); tmpconv.release();
+			}
+		}
+		Kernelset.clear();
+	}
+
+	if (GAP==true) {
+		conv_pattern = (new(double[conv[CLayer.size()].size()]));
+		for(int k = 0; k < conv[CLayer.size()].size(); k++)
+		{
+			Scalar meanVal = mean(conv[CLayer.size()][k]);
 			double matMean = (double)meanVal.val[0];
 			conv_pattern[k] = matMean;
 		}
 	}
 	else {
-		conv_pattern = (new(double[Kernelset.size()*conv[0].cols*conv[0].rows]));
-		for(int k = 0; k < Kernelset.size(); k++)
-		{
-			int nPixel = conv[k].cols*conv[k].rows;
-			for(int j = 0; j < conv[k].rows; j++)
-				for(int i = 0; i < conv[k].cols; i++) conv_pattern[k*nPixel+j*conv[k].rows+i] = conv[k].ATD(j,i);
-		}
+		int nPixel = conv[CLayer.size()][0].cols*conv[CLayer.size()][0].rows;
+		conv_pattern = (new(double[conv[CLayer.size()].size()*nPixel]));
+		for(int k = 0; k < conv[CLayer.size()].size(); k++)
+			for(int j = 0; j < (int)sqrt(nPixel); j++)
+				for(int i = 0; i < (int)sqrt(nPixel); i++)
+					conv_pattern[k*nPixel+j*conv[CLayer.size()][k].rows+i] = conv[CLayer.size()][k].ATD(j,i);
 	}
-
+	for(int k = 0; k < conv.size(); k++) conv[k].clear();
 	conv.clear();
 	return conv_pattern;
 }
 
-bool dataReader::loadKernels(const char* filename, int sk, int nk)
+bool dataReader::loadKernels(const char* filename, vector<ConvLayer> CL)
 {
+	CLayer = CL;
+
 	//open file for reading
 	fstream inputFile;
 	inputFile.open(filename, ios::in);
-
-	sKernel = (int)sk;
-	nKernel = (int)nk;
 
 	if ( inputFile.is_open() )
 	{
@@ -651,7 +638,6 @@ bool dataReader::loadKernels(const char* filename, int sk, int nk)
 				//tokenise
 				int i = 0;
 				t=strtok (cstr,",");
-
 				while ( t!=NULL )
 				{
 					weights.push_back( atof(t) );
@@ -667,28 +653,32 @@ bool dataReader::loadKernels(const char* filename, int sk, int nk)
 		}
 
 		//check if sufficient weights were loaded
-		int num_weight = sKernel * sKernel * nKernel;
+		int num_weight = 1;
+		for(int i=0; i<CLayer.size(); i++) num_weight = num_weight * (int)(CLayer[i].sKernel * CLayer[i].sKernel * CLayer[i].nKernel);
 		if ( weights.size() != num_weight )
 		{
 			cout << endl << "Error - Incorrect number of Kernels in input file: " << filename << endl;
 			//close file
 			inputFile.close();
-
 			return false;
 		}
 		else
 		{
 			//set weights
 			int pos = 0;
-			for ( int k=0; k < nKernel; k++ )
-			{
-				double** buf = new( double*[sKernel] );
-				for ( int i=0; i < sKernel; i++ )
+			for(int l=0; l<CLayer.size(); l++){
+				for ( int k=0; k < CLayer[l].nKernel; k++ )
 				{
-					buf[i] = new (double[sKernel]);
-					for ( int j=0; j < sKernel; j++ ) buf[i][j] = weights[pos++];
+					Mat buf(CLayer[l].sKernel,CLayer[l].sKernel,CV_64FC1);
+					for ( int j=0; j < CLayer[l].sKernel; j++ )
+					{
+						for ( int i=0; i < CLayer[l].sKernel; i++ ) {
+							buf.ATD(j,i) = weights[pos];
+							pos++;
+						}
+					}
+					CLayer[l].Kernels.push_back(buf);
 				}
-				Kernels.push_back(buf);
 			}
 			//print success
 			cout << endl << "Convolution Kernels loaded successfully from '" << filename << "'" << endl;

@@ -14,8 +14,8 @@ neuralNetwork::neuralNetwork(int nInput, vector<int> nHidden, int nOutput) : nIn
 	
 	//create neuron lists
 	inputNeurons = new( double[nInput + 1] );
-	for ( int i=0; i < nInput; i++ ) inputNeurons[i] = 0;
-	inputNeurons[nInput] = -1;
+	for ( int i=0; i <= nInput; i++ ) inputNeurons[i] = 0;
+	inputNeurons[nInput] = 1;
 
 	outputNeurons = new( double[nOutput] );
 	for ( int i=0; i < nOutput; i++ ) outputNeurons[i] = 0;

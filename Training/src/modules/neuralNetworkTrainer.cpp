@@ -239,7 +239,7 @@ void neuralNetworkTrainer::runTrainingEpoch( vector<dataEntry*> trainingSet )
 
 	//for every training pattern
 	for ( int tp = 0; tp < (int) trainingSet.size(); tp++)
-	{						
+	{
 		//feed inputs through network and backpropagation errors
 		NN->feedForward( trainingSet[tp]->pattern );
 		backpropagate( trainingSet[tp]->target );	
