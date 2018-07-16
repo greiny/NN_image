@@ -653,11 +653,12 @@ bool dataReader::loadKernels(const char* filename, vector<ConvLayer> CL)
 		}
 
 		//check if sufficient weights were loaded
-		int num_weight = 1;
-		for(int i=0; i<CLayer.size(); i++) num_weight = num_weight * (int)(CLayer[i].sKernel * CLayer[i].sKernel * CLayer[i].nKernel);
+		int num_weight = 0;
+		for(int i=0; i<CLayer.size(); i++) num_weight = num_weight + (int)(CLayer[i].sKernel * CLayer[i].sKernel * CLayer[i].nKernel);
 		if ( weights.size() != num_weight )
 		{
-			cout << endl << "Error - Incorrect number of Kernels in input file: " << filename << endl;
+			cout << endl << "Error - Incorrect number of weights in input file: " << filename << endl;
+			cout << "System requires " << num_weight << " and " << weights.size() << " put in " << endl;
 			//close file
 			inputFile.close();
 			return false;
