@@ -23,8 +23,6 @@ public:
 	double* pattern;	//input patterns
 	double* target;		//target result
 
-public:	
-
 	dataEntry(double* p, double* t): pattern(p), target(t) {}
 		
 	~dataEntry()

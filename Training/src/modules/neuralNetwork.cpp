@@ -80,11 +80,17 @@ neuralNetwork::~neuralNetwork()
 	for (int k=0; k<nLayer; k++) delete[] hiddenNeurons[k];
 
 	//delete weight storage
-	for (int i=0; i <= nInput; i++) delete[] wInputHidden[i];
-	delete[] wInputHidden;
-	for (int j=0; j <= nHidden[nLayer-1]; j++) delete[] wHiddenOutput[j];
-	delete[] wHiddenOutput;
-	if (nLayer>1) for (int k=0; k<nLayer-1; k++) for (int i=0; i<=nHidden[k]; i++) delete[] wHiddenHidden[k][i];
+	if (nLayer==0){
+		for (int i=0; i <= nInput; i++) delete[] wInputOutput[i];
+		delete[] wInputOutput;
+	}
+	else{
+		for (int i=0; i <= nInput; i++) delete[] wInputHidden[i];
+		delete[] wInputHidden;
+		for (int j=0; j <= nHidden[nLayer-1]; j++) delete[] wHiddenOutput[j];
+		delete[] wHiddenOutput;
+		if (nLayer>1) for (int k=0; k<nLayer-1; k++) for (int i=0; i<=nHidden[k]; i++) delete[] wHiddenHidden[k][i];
+	}
 }
 
 /*******************************************************************

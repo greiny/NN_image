@@ -25,7 +25,7 @@ int main()
 	//Training condition
 	int max_epoch = 10000000;
 	double accuracy = 99.9;
-	double max_time = 300;
+	double max_time = 3000;
 	float lr = 0.001;
 	float momentum = 0.9;
 	float tRatio = 0.7;
@@ -36,14 +36,14 @@ int main()
 	int nOutput = 2;
 	vector<ConvLayer> CLayer;
 	ConvLayer CLayer1, CLayer2;
-		CLayer1.nKernel = 4;
+		CLayer1.nKernel = 3;
 		CLayer1.sKernel = 7;
 		CLayer1.pdim = 2;
 		CLayer.push_back(CLayer1);
-		//CLayer2.nKernel = 7;
-		//CLayer2.sKernel = 3;
-		//CLayer2.pdim = 2;
-		//CLayer.push_back(CLayer2);
+		CLayer2.nKernel = 5;
+		CLayer2.sKernel = 3;
+		CLayer2.pdim = 2;
+		CLayer.push_back(CLayer2);
 	vector<int> FCLayer{}; // #neuron -> FCLayer{256,64}
 	bool GAP = true;
 
@@ -58,7 +58,7 @@ int main()
 
 	//create data set reader and load data file
 	dataReader d;
-	d.loadKernels("kernel4.csv",CLayer);
+	d.loadKernels("7(3)_3(5).csv",CLayer);
 	d.loadImageFile4Train("image_data/imgdata2.csv",sImage,nOutput,tRatio,vRatio,GAP);
 	d.setCreationApproach( STATIC, 10 );
 
@@ -89,7 +89,7 @@ int main()
 		logTrain << "Input" << "," << nInput << endl;
 		logTrain << "ConvLayer" << "," << CLayer.size() << endl;
 		for (int i=0; i<CLayer.size(); i++)
-			logTrain << "Kernel["<< i << "]," << CLayer[i].nKernel << "," << CLayer[i].sKernel << "x" << CLayer[i].sKernel << ", "<< CLayer[i].pdim << endl;
+			logTrain << "Kernel["<< i << "]," << CLayer[i].nKernel << "," << CLayer[i].sKernel << "x" << CLayer[i].sKernel << ","<< CLayer[i].pdim << endl;
 		logTrain << "FCLayer" << "," << FCLayer.size() << endl;
 		for (int i=0; i<FCLayer.size(); i++) logTrain << "Neuron["<< i << "]," << FCLayer[i] << endl;
 		logTrain << "Output" << "," << nOutput << endl;
@@ -117,6 +117,7 @@ int main()
 		nT.trainNetwork( d.getTrainingDataSet() );
 	}
 
+	CLayer.clear();
 	//print success
 	cout << endl << "Neuron weights saved to '" << w_name << "'" << endl;
 	cout << endl << endl << "-- END OF PROGRAM --" << endl;
