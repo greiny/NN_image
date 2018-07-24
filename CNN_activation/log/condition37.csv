@@ -1,0 +1,9 @@
+#Input,784
+#Layer,1
+#Neuron[0],64
+#Output,2
+#TrainingSet,1324
+#ValidationSet,567
+Accuracy(%),99.9
+Learning_rate,0.001
+Momentum,0.9

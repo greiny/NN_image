@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <opencv2/core.hpp>
+#include "matrix_maths.h"
 
 /*******************************************************************
 * stores a data item
@@ -39,6 +40,8 @@ public:
 	int nKernel;
 	int sKernel;
 	int pdim;
+	int pmethod = POOL_MAX;
+	int non_linear = NL_RELU;
 	std::vector<cv::Mat> Kernels; //[nKernel][y][x]
 };
 

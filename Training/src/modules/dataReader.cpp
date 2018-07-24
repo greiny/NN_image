@@ -1,12 +1,10 @@
 //include definition file
 #include "dataReader.h"
-#include "matrix_maths.h"
 #include <iostream>
 #include <fstream>
 #include <string.h>
 #include <math.h>
 #include <algorithm>
-
 
 using namespace std;
 using namespace cv;
@@ -514,7 +512,6 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, bool GAP)
 	Mat img(rows,rows,CV_64FC1);
 	for(int j = 0; j < rows; j++) for(int i = 0; i < rows; i++) img.ATD(j, i) = (double)pattern[j*rows+i];
 	img.convertTo(img, CV_64FC1, 1.0/255, 0);
-
 	vector<vector<Mat>> conv(CLayer.size()+1);
 	int count=1;
 	for (int i = 0; i < CLayer.size()+1; i++) {
@@ -530,8 +527,8 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, bool GAP)
 			{
 				Mat temp = rot90(CLayer[l].Kernels[k], 2);
 				Mat tmpconv = convCalc(conv[l][n], temp, CONV_SAME);
-				tmpconv = nonLinearity(tmpconv,NL_SIGMOID);
-				tmpconv = Pooling(tmpconv, CLayer[l].pdim, CLayer[l].pdim, POOL_MAX);
+				tmpconv = nonLinearity(tmpconv, CLayer[l].non_linear);
+				tmpconv = Pooling(tmpconv, CLayer[l].pdim, CLayer[l].pdim, CLayer[l].pmethod);
 				conv[l+1].push_back(tmpconv); // conv[l+1].size() == Kernelset.size()
 				temp.release(); tmpconv.release();
 			}
@@ -570,7 +567,7 @@ double* dataReader::ConvNPooling(Mat pattern, bool GAP)
 		conv[i].reserve(count);
 		count = count * CLayer[i].Kernels.size();
 	}
-	conv[0].push_back(img);
+	conv[0].push_back(pattern);
 	for(int l=0; l<CLayer.size(); l++){
 		// Convolution and Pooling computation
 		for(int n = 0; n < conv[l].size(); n++)
@@ -579,8 +576,8 @@ double* dataReader::ConvNPooling(Mat pattern, bool GAP)
 			{
 				Mat temp = rot90(CLayer[l].Kernels[k], 2);
 				Mat tmpconv = convCalc(conv[l][n], temp, CONV_SAME);
-				tmpconv = nonLinearity(tmpconv,NL_SIGMOID);
-				tmpconv = Pooling(tmpconv, CLayer[l].pdim, CLayer[l].pdim, POOL_MAX);
+				tmpconv = nonLinearity(tmpconv,CLayer[l].non_linear);
+				tmpconv = Pooling(tmpconv, CLayer[l].pdim, CLayer[l].pdim, CLayer[l].pmethod);
 				conv[l+1].push_back(tmpconv); // conv[l+1].size() == Kernelset.size()
 				temp.release(); tmpconv.release();
 			}

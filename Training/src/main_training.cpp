@@ -11,6 +11,7 @@
 #include <fstream>
 
 //custom includes
+#include "modules/matrix_maths.h"
 #include "modules/neuralNetwork.h"
 #include "modules/neuralNetworkTrainer.h"
 
@@ -32,20 +33,22 @@ int main()
 	float vRatio = 0.3;
 
 	//Layer Construction
-	int sImage = 28*28;
+	int sImage = 64*64;
 	int nOutput = 2;
 	vector<ConvLayer> CLayer;
 	ConvLayer CLayer1, CLayer2;
 		CLayer1.nKernel = 3;
-		CLayer1.sKernel = 7;
-		CLayer1.pdim = 2;
+		CLayer1.sKernel = 15;
+		CLayer1.pdim = 2; CLayer1.pmethod = POOL_MAX;
+		CLayer1.non_linear = NL_RELU;
 		CLayer.push_back(CLayer1);
 		CLayer2.nKernel = 5;
-		CLayer2.sKernel = 3;
-		CLayer2.pdim = 2;
+		CLayer2.sKernel = 9;
+		CLayer2.pdim = 2; CLayer2.pmethod = POOL_MAX;
+		CLayer2.non_linear = NL_RELU;
 		CLayer.push_back(CLayer2);
-	vector<int> FCLayer{}; // #neuron -> FCLayer{256,64}
-	bool GAP = true;
+	vector<int> FCLayer{64}; // #neuron -> FCLayer{256,64}
+	bool GAP = false;
 
 	int nInput = 1;
 	for(int i=0; i<CLayer.size(); i++) nInput = nInput*CLayer[i].nKernel;
@@ -58,8 +61,8 @@ int main()
 
 	//create data set reader and load data file
 	dataReader d;
-	d.loadKernels("7(3)_3(5).csv",CLayer);
-	d.loadImageFile4Train("image_data/imgdata2.csv",sImage,nOutput,tRatio,vRatio,GAP);
+	d.loadKernels("kernel_crack.csv",CLayer);
+	d.loadImageFile4Train("image_data/imgdata_crack.txt",sImage,nOutput,tRatio,vRatio,GAP);
 	d.setCreationApproach( STATIC, 10 );
 
 	//create neural network
