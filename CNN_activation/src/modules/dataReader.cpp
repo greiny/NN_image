@@ -583,6 +583,24 @@ double* dataReader::ConvNPooling(Mat pattern, bool GAP)
 			}
 		}
 	}
+
+	Mat test(Size(conv[CLayer.size()][0].cols,conv[CLayer.size()][0].rows),pattern.type(),Scalar::all(0));
+	Mat test2 = test.clone();
+	Mat B = (Mat_<double>(5,2) << -393.8774023,393.4888216,-923.6352675,923.6415215,-604.2804562,604.3228498,41.35335719,-40.99596865,956.9041715,-956.9150885);
+	for(int k = 0; k < CLayer[0].Kernels.size(); k++)
+	{
+		Mat temp(Size(test.cols,test.rows),test.type(),Scalar::all(0));
+		resize(conv[CLayer.size()][k], temp, Size(test.cols,test.rows));
+		test = test + temp*B.ATD(k,0);
+		temp.release();
+	}
+	test -= B.at<double>(4,0);
+	resize(test, test, Size(pattern.cols,pattern.rows));
+	//test = nonLinearity(test,NL_SIGMOID);
+	Mat img(Size(test.cols*2,test.rows),test.type(),Scalar::all(0));
+	hconcat(pattern,test,img);
+	imshow( "imgtest", img );
+
 	int nPixel = conv[CLayer.size()][0].cols*conv[CLayer.size()][0].rows;
 	double* conv_pattern =  new( double[conv[CLayer.size()].size()*nPixel] );
 	if (GAP==true) {
