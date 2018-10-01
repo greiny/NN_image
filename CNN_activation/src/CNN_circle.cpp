@@ -39,8 +39,8 @@ int main(int argc, const char* argv[])
 	int sImage = 64*64;//480*320;
 	int nOutput = 2;
 	vector<ConvLayer> CLayer;
-	vector<int> FCLayer{64}; // #neuron -> FCLayer{256,64}
-	bool GAP = false;
+	vector<int> FCLayer{}; // #neuron -> FCLayer{256,64}
+	bool GAP = true;
 	int nInput = 1;
 
 	ConvLayer CLayer1, CLayer2;
@@ -65,34 +65,23 @@ int main(int argc, const char* argv[])
 	// Loads a csv file of weight matrix data
 	char* kernel_file = "log/kernel_crack.csv";
 	dR.loadKernels(kernel_file,CLayer);
-
-	// Loads a csv file of weight matrix data
-	char* weights_file = "log/weights_crack.txt";
+	char* weights_file = "log/weights2.txt";
 	nn.loadWeights(weights_file);
 
 	Mat frame;
 	int k = 1;
-
-	// Time checking start
-	int frames = 0;
-	float time = 0, fps = 0;
-	auto t0 = std::chrono::high_resolution_clock::now();
-
 	while(1)
 	{
 		stringstream open;
 		open << "crack_image/crack(" << k << ").jpg";
 		Mat src = imread(open.str(),0);
-		resize(src,src,Size(480,320));
 		if (src.empty() == true) break;
 
 		// Create binary image from source image
-		Mat morph;
-		Mat kk = Mat::ones(12, 12, CV_8UC1);
-		erode(src, morph, kk);
-		double *conv_pattern = dR.ConvNPooling(morph,GAP);
+		double *conv_pattern = dR.ConvNPooling(src,GAP);
 		double *res = nn.feedForwardPattern(conv_pattern); // calculation results
 		cout << res[0] << endl;
+		k++;
 	} // end of while
     return 0;
 }

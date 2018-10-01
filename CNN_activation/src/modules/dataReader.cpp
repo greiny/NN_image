@@ -559,15 +559,20 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, bool GAP)
 
 double* dataReader::ConvNPooling(Mat pattern, bool GAP)
 {
-	// Normalization
-	pattern.convertTo(pattern, CV_64FC1, 1.0/255, 0);
 	vector<vector<Mat>> conv(CLayer.size()+1);
 	int count=1;
 	for (int i = 0; i < CLayer.size()+1; i++) {
 		conv[i].reserve(count);
 		count = count * CLayer[i].Kernels.size();
 	}
-	conv[0].push_back(pattern);
+
+	// Normalization
+	Mat morph;
+	Mat kk = Mat::ones((int)(pattern.rows/10), (int)(pattern.cols/10), CV_64FC1);
+	erode(pattern, morph, kk);
+	morph.convertTo(morph, CV_64FC1, 1.0/255, 0);
+	pattern.convertTo(pattern, CV_64FC1, 1.0/255, 0);
+	conv[0].push_back(morph);
 	for(int l=0; l<CLayer.size(); l++){
 		// Convolution and Pooling computation
 		for(int n = 0; n < conv[l].size(); n++)
@@ -585,22 +590,21 @@ double* dataReader::ConvNPooling(Mat pattern, bool GAP)
 	}
 
 	Mat test(Size(conv[CLayer.size()][0].cols,conv[CLayer.size()][0].rows),pattern.type(),Scalar::all(0));
-	Mat test2 = test.clone();
-	Mat B = (Mat_<double>(5,2) << -393.8774023,393.4888216,-923.6352675,923.6415215,-604.2804562,604.3228498,41.35335719,-40.99596865,956.9041715,-956.9150885);
-	for(int k = 0; k < CLayer[0].Kernels.size(); k++)
+	Mat B = (Mat_<double>(16,2) << 0.2478709342,-0.1910671784,0.201395134,0.04647580015,-0.227215023,-0.07745966692,0.04647580015,0.02581988897,0.2323790008,0.0981155781,-0.0981155781,-0.06196773354,-0.005163977795,0.2375429786,-0.1549193338,-0.2375429786,-0.1859032006,0.2117230896,0.1239354671,0.1962311562,34.45668701,-34.45668254,236.6974277,-236.6975032,-0.2478709342,0.08262364472,60.09917724,-60.09918308,-47.4869051,47.48690708,-0.8934831942,0.8934837222);
+	for(int k = 0; k < conv[CLayer.size()].size(); k++)
 	{
 		Mat temp(Size(test.cols,test.rows),test.type(),Scalar::all(0));
 		resize(conv[CLayer.size()][k], temp, Size(test.cols,test.rows));
 		test = test + temp*B.ATD(k,0);
 		temp.release();
 	}
-	test -= B.at<double>(4,0);
+	//test -= B.at<double>(CLayer[1].Kernels.size(),0);
 	resize(test, test, Size(pattern.cols,pattern.rows));
 	//test = nonLinearity(test,NL_SIGMOID);
 	Mat img(Size(test.cols*2,test.rows),test.type(),Scalar::all(0));
 	hconcat(pattern,test,img);
 	imshow( "imgtest", img );
-
+	waitKey(0);
 	int nPixel = conv[CLayer.size()][0].cols*conv[CLayer.size()][0].rows;
 	double* conv_pattern =  new( double[conv[CLayer.size()].size()*nPixel] );
 	if (GAP==true) {

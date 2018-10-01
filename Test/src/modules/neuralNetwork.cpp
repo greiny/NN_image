@@ -138,43 +138,65 @@ bool neuralNetwork::loadWeights(const char* filename)
 			}
 		}
 
-		//check if sufficient weights were loaded
-		int num_weight = (nInput + 1) * nHidden[0] + (nHidden[nLayer-1] +  1) * nOutput;
-		if (nLayer>1) for (int k=0; k<nLayer-1; k++) num_weight += (nHidden[k] +  1) * nHidden[k+1];
-
-		if ( weights.size() != num_weight )
-		{
-			cout << endl << "Error - Incorrect number of weights in input file: " << filename << endl;
-			cout << "System requires " << num_weight << " and " << weights.size() << " put in " << endl;
-			//close file
-			inputFile.close();
-
-			return false;
-		}
-		else
-		{
-			//set weights
-			int pos = 0;
-
-			for ( int i=0; i <= nInput; i++ )
+		if (nLayer==0) {
+			int num_weight = (nInput + 1) * nOutput;
+			if ( weights.size() != num_weight )
 			{
-				for ( int j=0; j < nHidden[0]; j++ ) wInputHidden[i][j] = weights[pos++];
+				cout << endl << "Error - Incorrect number of weights in input file: " << filename << endl;
+				cout << "System requires " << num_weight << " and " << weights.size() << " put in " << endl;
+				inputFile.close();
+				return false;
 			}
-			if (nLayer>1)
+			else
 			{
-				for (int k=0; k<nLayer-1; k++)
+				//set weights
+				int pos = 0;
+				for ( int i=0; i <= nInput; i++ )
+					for ( int j=0; j < nOutput; j++ ) wInputOutput[i][j] = weights[pos++];
+			}
+			//print success
+			cout << endl << "Neuron weights loaded successfully from '" << filename << "'" << endl;
+			inputFile.close();
+			return true;
+		}
+		else { 
+			//check if sufficient weights were loaded
+			int num_weight = (nInput + 1) * nHidden[0] + (nHidden[nLayer-1] +  1) * nOutput;
+			if (nLayer>1) for (int k=0; k<nLayer-1; k++) num_weight += (nHidden[k] +  1) * nHidden[k+1];
+
+			if ( weights.size() != num_weight )
+			{
+				cout << endl << "Error - Incorrect number of weights in input file: " << filename << endl;
+				cout << "System requires " << num_weight << " and " << weights.size() << " put in " << endl;
+				//close file
+				inputFile.close();
+
+				return false;
+			}
+			else
+			{
+				//set weights
+				int pos = 0;
+
+				for ( int i=0; i <= nInput; i++ )
 				{
-					for ( int i=0; i <= nHidden[k]; i++ )
+					for ( int j=0; j < nHidden[0]; j++ ) wInputHidden[i][j] = weights[pos++];
+				}
+				if (nLayer>1)
+				{
+					for (int k=0; k<nLayer-1; k++)
 					{
-						for ( int j=0; j < nHidden[k+1]; j++ ) wHiddenHidden[k][i][j] = weights[pos++];
+						for ( int i=0; i <= nHidden[k]; i++ )
+						{
+							for ( int j=0; j < nHidden[k+1]; j++ ) wHiddenHidden[k][i][j] = weights[pos++];
+						}
 					}
 				}
-			}
-			for ( int i=0; i <= nHidden[nLayer-1]; i++ )
-			{
-				for ( int j=0; j < nOutput; j++ ) wHiddenOutput[i][j] = weights[pos++];
-			}
-
+				for ( int i=0; i <= nHidden[nLayer-1]; i++ )
+				{
+					for ( int j=0; j < nOutput; j++ ) wHiddenOutput[i][j] = weights[pos++];
+				}
+		}
 			//print success
 			cout << endl << "Neuron weights loaded successfully from '" << filename << "'" << endl;
 			//close file
@@ -444,7 +466,7 @@ void neuralNetwork::feedForward(double* pattern)
 					//get weighted sum of pattern and bias neuron
 					for( int i=0; i <= nHidden[k-1]; i++ )
 					{
-						hiddenNeurons[k][j] += hiddenNeurons[k][i] * wHiddenHidden[k-1][i][j];
+						hiddenNeurons[k][j] += hiddenNeurons[k-1][i] * wHiddenHidden[k-1][i][j];
 					}
 					//set to result of sigmoid
 					hiddenNeurons[k][j] = activationFunction( hiddenNeurons[k][j] );
