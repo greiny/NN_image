@@ -1,6 +1,6 @@
-#NN_image
+# NN_image
 
-Neural Network with image processing for Real-time operation\n
+Neural Network with image processing for Real-time operation
 
 1.Training_network -> training condition and results saved as csv and txt files
 
