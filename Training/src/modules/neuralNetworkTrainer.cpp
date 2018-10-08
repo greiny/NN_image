@@ -246,16 +246,16 @@ void neuralNetworkTrainer::runTrainingEpoch( vector<dataEntry*> trainingSet )
 
 		//pattern correct flag
 		bool patternCorrect = true;
-
+		double* new_outputNeurons = NN->clampOutput( NN->outputNeurons);
 		//check all outputs from neural network against desired values
 		for ( int k = 0; k < NN->nOutput; k++ )
 		{					
 			//pattern incorrect if desired and output differ
-			if ( NN->clampOutput( NN->outputNeurons[k] ) != trainingSet[tp]->target[k] ) patternCorrect = false;
-			
+			if ( new_outputNeurons[k] != trainingSet[tp]->target[k] ) patternCorrect = false;
 			//calculate MSE
 			mse += pow(( NN->outputNeurons[k] - trainingSet[tp]->target[k] ), 2);
 		}
+		free(new_outputNeurons);
 		
 		//if pattern is incorrect add to incorrect count
 		if ( !patternCorrect ) incorrectPatterns++;	
@@ -322,10 +322,7 @@ void neuralNetworkTrainer::backpropagate( double* desiredOutputs )
 					for (int i = 0; i <= NN->nHidden[k]; i++)
 					{
 						//calculate change in weight
-						if ( !useBatch )
-						{
-							deltaHiddenHidden[k][i][j] = learningRate * NN->hiddenNeurons[k][i] * hiddenErrorGradients[k+1][j] + momentum * deltaHiddenHidden[k][i][j];
-						}
+						if ( !useBatch ) deltaHiddenHidden[k][i][j] = learningRate * NN->hiddenNeurons[k][i] * hiddenErrorGradients[k+1][j] + momentum * deltaHiddenHidden[k][i][j];
 						else deltaHiddenHidden[k][i][j] += learningRate * NN->hiddenNeurons[k][i] * hiddenErrorGradients[k+1][j];
 					}
 				}
