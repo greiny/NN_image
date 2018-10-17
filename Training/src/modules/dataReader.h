@@ -14,6 +14,9 @@
 #include <opencv2/core.hpp>
 #include "matrix_maths.h"
 
+#define NML 0
+#define STD 1
+
 /*******************************************************************
 * stores a data item
 ********************************************************************/
@@ -117,7 +120,7 @@ public:
 	int trainingDataEndIndex;
 	dataReader(): creationApproach(NONE), numTrainingSets(-1) {}
 	~dataReader();
-	bool loadDataFile4Train( const char* filename, int nI, int nT, float gratio, float tratio ); //maxmin->normalization
+	bool loadDataFile4Train( const char* filename, int nI, int nT, float gratio, float tratio, bool); //maxmin->normalization
 	bool loadImageFile4Train( const char* filename, int nI, int nT, float gratio, float tratio, bool); //normalization->convolution and pooling->ReLU
 	void loadImage4Test( const cv::Mat frame,int,int, bool); //normalization->convolution and pooling->ReLU
 	bool maxmin( const char* filename);

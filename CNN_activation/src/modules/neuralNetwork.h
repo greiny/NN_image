@@ -68,6 +68,7 @@ public:
 	void getRegression( std::vector<dataEntry*>& set, int i );
 	double getSetMSE( std::vector<dataEntry*>& set );
 	int clampOutput( double x );
+	double* clampOutput( double* x );
 
 	//private methods
 	//--------------------------------------------------------------------------------------------
@@ -75,7 +76,7 @@ public:
 private: 
 
 	void initializeWeights();
-	inline double activationFunction( double x );
+	inline double activationFunction( double x , int method);
 	void feedForward( double* pattern );
 	
 };

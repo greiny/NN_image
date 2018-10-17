@@ -22,7 +22,7 @@ dataReader::~dataReader()
 /*******************************************************************
 * Loads a csv file of input data
 ********************************************************************/
-bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float tratio, float gratio)
+bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float tratio, float gratio, bool method)
 {
 	//clear any previous data
 	for (int i=0; i < (int) data.size(); i++ ) delete data[i];		
@@ -54,43 +54,61 @@ bool dataReader::loadDataFile4Train( const char* filename, int nI, int nT ,float
 		//print success
 		cout << "Input File: " << filename << "\nRead Complete: " << data.size() << " Patterns Loaded"  << endl;
 
-		//normalize data
-		double *buf[(int)nInputs];
-		vector <double> minVal, maxVal;
-		ofstream maxmin("log/maxmin.csv");
-		for(int i=0; i < nInputs; i++)
-		{
-			buf[i] = new( double[(int)data.size()] );
-			double min=100000, max = 0;
-			for(int j=0; j < (int)data.size(); j++)
+		if (method == NML){
+			//normalize data
+			double *buf[(int)nInputs];
+			vector <double> minVal, maxVal;
+			ofstream maxmin("log/maxmin.csv");
+			for(int i=0; i < nInputs; i++)
 			{
-				double temp = (double)data[j]->pattern[i];
-			    if (temp > max) max = temp;
-			    if (temp < min) min = temp;
-			    buf[i][j] = temp;
-			}
-			minVal.push_back(min);
-			maxVal.push_back(max);
-			maxmin << min << "," << max << endl;
-			//cout << "#input = " << (int)i+1 << "  min = " << min << ", max = " << max << endl;
-		}
-		maxmin.close();
-
-		for(int ii=0; ii < nInputs; ii++)
-		{
-			for(int jj=0; jj < data.size(); jj++)
-			{
-				double diff = maxVal[ii]-minVal[ii];
-				if (diff==0)
+				buf[i] = new( double[(int)data.size()] );
+				double min=100000, max = 0;
+				for(int j=0; j < (int)data.size(); j++)
 				{
-					data[jj]->pattern[ii]=1.0;
+				    double temp = (double)data[j]->pattern[i];
+				    if (temp > max) max = temp;
+				    else if (temp < min) min = temp;
+				    buf[i][j] = temp;
 				}
-				else
-				{
-					data[jj]->pattern[ii]=(double)((buf[ii][jj]-minVal[ii])/diff);
-				} // normalization to 0~1
+				minVal.push_back(min);
+				maxVal.push_back(max);
+				maxmin << min << "," << max << endl;
 			}
+			maxmin.close();
+			for(int ii=0; ii < nInputs; ii++)
+			{
+				for(int jj=0; jj < data.size(); jj++)
+				{
+					double diff = maxVal[ii]-minVal[ii];
+					if (diff==0) data[jj]->pattern[ii]=1.0;
+					else data[jj]->pattern[ii]=(double)((buf[ii][jj]-minVal[ii])/diff); // normalization to 0~1
+				}
+			};
+		}
 
+		else{
+			//standardize data
+			double* avg = new double[nInputs];
+			double* std = new double[nInputs];
+			for(int i=0; i < nInputs; i++)
+			{
+				Mat buf = Mat::zeros(1,(int)data.size(),CV_64FC1);
+				for(int j=0; j < (int)data.size(); j++) buf.ATD(0,j) = data[j]->pattern[i];
+				Scalar mean, stddev;
+				meanStdDev(buf,mean,stddev);
+				avg[i]=mean[0]; 
+				std[i]=stddev[0];
+			}
+			for(int ii=0; ii < nInputs; ii++)
+			{
+				for(int jj=0; jj < data.size(); jj++)
+				{
+					if (std[ii]!=0) data[jj]->pattern[ii]=(double)((data[jj]->pattern[ii]-avg[ii])/std[ii]);
+					else data[jj]->pattern[ii]=(double)0.0f;
+				}
+			}
+			delete[] avg;
+			delete[] std;
 		}
 
 		//shuffle data
@@ -152,10 +170,7 @@ bool dataReader::loadImageFile4Train( const char* filename, int nI, int nT ,floa
 		cout << "Input File: " << filename << "\nRead Complete: " << data.size() << " Patterns Loaded"  << endl;
 
 		// normalize and convolve data
-		for(int jj=0; jj < data.size(); jj++)
-		{
-			data[jj]-> pattern = ConvNPooling(data[jj]->pattern,sImage,GAP);
-		}
+		for(int jj=0; jj < data.size(); jj++) data[jj]-> pattern = ConvNPooling(data[jj]->pattern,sImage,GAP);
 
 		//shuffle data
 		random_shuffle(data.begin(), data.end());

@@ -298,13 +298,11 @@ double neuralNetwork::getSetAccuracy( std::vector<dataEntry*>& set )
 		
 		//correct pattern flag
 		bool correctResult = true;
-
+		double* new_outputNeurons = clampOutput(outputNeurons);
 		//check all outputs against desired output values
 		for ( int k = 0; k < nOutput; k++ )
-		{					
-			//set flag to false if desired and output differ
-			if ( clampOutput(outputNeurons[k]) != set[tp]->target[k] ) correctResult = false;
-		}
+			if ( new_outputNeurons[k] != set[tp]->target[k] ) correctResult = false;
+		free(new_outputNeurons);
 		//inc training error for a incorrect result
 		if ( !correctResult ) incorrectResults++;	
 		
@@ -408,12 +406,12 @@ void neuralNetwork::initializeWeights()
 /*******************************************************************
 * Activation Function
 ********************************************************************/
-inline double neuralNetwork::activationFunction( double x )
+inline double neuralNetwork::activationFunction( double x, int method)
 {
-	//sigmoid function
-	//return tanh(x);
-	//return max(0,x);
-	return 1/(1+exp(-x));
+	if (method==NL_SIGMOID) return 1/(1+exp(-x));
+	else if (method==NL_TANH) return tanh(x);
+	else if (method==NL_RELU) return max((double)0,x);
+	else return -1;
 }	
 /*******************************************************************
 * Output Clamping
@@ -423,6 +421,23 @@ int neuralNetwork::clampOutput( double x )
 	if ( x > 0.9 ) return 1;
 	else if ( x < 0.1 ) return 0;
 	else return -1;
+}
+
+double* neuralNetwork::clampOutput( double* x )
+{
+	double max_val=0;
+	int max_loc=0;
+	for(int k=0; k < nOutput; k++) {
+		if(max_val<x[k]) {
+			max_val = x[k]; max_loc = k;
+		}
+	}
+	double* new_output = new double[nOutput];
+	for(int k=0; k < nOutput; k++){
+		if (k==max_loc) new_output[k] = 1;
+		else new_output[k] = 0;
+	}
+	return new_output;
 }
 /*******************************************************************
 * Feed Forward Operation
@@ -440,7 +455,7 @@ void neuralNetwork::feedForward(double* pattern)
 			//get weighted sum of pattern and bias neuron
 			for( int i=0; i <= nInput; i++ ) outputNeurons[j] += inputNeurons[i] * wInputOutput[i][j];
 			//set to result of sigmoid
-			outputNeurons[j] = activationFunction( outputNeurons[j] );
+			outputNeurons[j] = activationFunction( outputNeurons[j] , NL_SIGMOID);
 		}
 	}
 	else {
@@ -451,7 +466,7 @@ void neuralNetwork::feedForward(double* pattern)
 			//get weighted sum of pattern and bias neuron
 			for( int i=0; i <= nInput; i++ ) hiddenNeurons[0][j] += inputNeurons[i] * wInputHidden[i][j];
 			//set to result of sigmoid
-			hiddenNeurons[0][j] = activationFunction( hiddenNeurons[0][j] );
+			hiddenNeurons[0][j] = activationFunction( hiddenNeurons[0][j], NL_SIGMOID );
 		}
 
 		if (nLayer>1)
@@ -466,10 +481,10 @@ void neuralNetwork::feedForward(double* pattern)
 					//get weighted sum of pattern and bias neuron
 					for( int i=0; i <= nHidden[k-1]; i++ )
 					{
-						hiddenNeurons[k][j] += hiddenNeurons[k][i] * wHiddenHidden[k-1][i][j];
+						hiddenNeurons[k][j] += hiddenNeurons[k-1][i] * wHiddenHidden[k-1][i][j];
 					}
 					//set to result of sigmoid
-					hiddenNeurons[k][j] = activationFunction( hiddenNeurons[k][j] );
+					hiddenNeurons[k][j] = activationFunction( hiddenNeurons[k][j], NL_SIGMOID );
 				}
 			}
 		}
@@ -481,7 +496,7 @@ void neuralNetwork::feedForward(double* pattern)
 			//get weighted sum of pattern and bias neuron
 			for( int i=0; i <= nHidden[nLayer-1]; i++ ) outputNeurons[j] += hiddenNeurons[nLayer-1][i] * wHiddenOutput[i][j];
 			//set to result of sigmoid
-			outputNeurons[j] = activationFunction( outputNeurons[j] );
+			outputNeurons[j] = activationFunction( outputNeurons[j], NL_SIGMOID );
 		}
 	}
 }

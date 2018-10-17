@@ -33,6 +33,20 @@ int main()
 	float vRatio = 0.3;
 
 	//Layer Construction
+	vector<ConvLayer> CLayer;
+	vector<int> FCLayer{64};
+
+#if 0
+	// for data
+	int nInput = 29;
+	int nOutput = 2;
+
+	//create data set reader and load data file
+	dataReader d;
+	d.loadDataFile4Train("data/cast_training_data1.csv",nInput,nOutput,tRatio,vRatio,NML);
+	d.setCreationApproach( STATIC, 10 );
+#else
+	// for image
 	int sImage = 64*64;
 	int nOutput = 2;
 	vector<ConvLayer> CLayer;
@@ -47,7 +61,6 @@ int main()
 		CLayer2.pdim = 2; CLayer2.pmethod = POOL_MAX;
 		CLayer2.non_linear = NL_RELU;
 		CLayer.push_back(CLayer2);
-	vector<int> FCLayer{64}; // #neuron -> FCLayer{256,64}
 	bool GAP = false;
 
 	int nInput = 1;
@@ -64,6 +77,8 @@ int main()
 	d.loadKernels("kernel_crack.csv",CLayer);
 	d.loadImageFile4Train("image_data/imgdata_crack.txt",sImage,nOutput,tRatio,vRatio,GAP);
 	d.setCreationApproach( STATIC, 10 );
+
+#endif
 
 	//create neural network
 	neuralNetwork nn(nInput,FCLayer,nOutput);
@@ -90,9 +105,11 @@ int main()
 	if ( logTrain.is_open() )
 	{
 		logTrain << "Input" << "," << nInput << endl;
-		logTrain << "ConvLayer" << "," << CLayer.size() << endl;
-		for (int i=0; i<CLayer.size(); i++)
-			logTrain << "Kernel["<< i << "]," << CLayer[i].nKernel << "," << CLayer[i].sKernel << "x" << CLayer[i].sKernel << ","<< CLayer[i].pdim << endl;
+		if(CLayer.size()!=0){ 
+			logTrain << "ConvLayer" << "," << CLayer.size() << endl;
+			for (int i=0; i<CLayer.size(); i++)
+				logTrain << "Kernel["<< i << "]," << CLayer[i].nKernel << "," << CLayer[i].sKernel << "x" << CLayer[i].sKernel << ","<< CLayer[i].pdim << endl;
+		}
 		logTrain << "FCLayer" << "," << FCLayer.size() << endl;
 		for (int i=0; i<FCLayer.size(); i++) logTrain << "Neuron["<< i << "]," << FCLayer[i] << endl;
 		logTrain << "Output" << "," << nOutput << endl;
@@ -124,4 +141,4 @@ int main()
 	//print success
 	cout << endl << "Neuron weights saved to '" << w_name << "'" << endl;
 	cout << endl << endl << "-- END OF PROGRAM --" << endl;
-}
+} 
