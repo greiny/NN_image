@@ -298,10 +298,18 @@ double neuralNetwork::getSetAccuracy( std::vector<dataEntry*>& set )
 		
 		//correct pattern flag
 		bool correctResult = true;
-		double* new_outputNeurons = clampOutput(outputNeurons);
+#if 1
+		double* new_outputNeurons = sotfMax(outputNeurons);
 		//check all outputs against desired output values
 		for ( int k = 0; k < nOutput; k++ )
 			if ( new_outputNeurons[k] != set[tp]->target[k] ) correctResult = false;
+#else
+		for ( int k = 0; k < nOutput; k++ )
+		{					
+			//set flag to false if desired and output differ
+			if ( clampOutput(outputNeurons[k]) != set[tp]->target[k] ) correctResult = false;
+		}	
+#endif
 		free(new_outputNeurons);
 		//inc training error for a incorrect result
 		if ( !correctResult ) incorrectResults++;	
@@ -423,7 +431,7 @@ int neuralNetwork::clampOutput( double x )
 	else return -1;
 }
 
-double* neuralNetwork::clampOutput( double* x )
+double* neuralNetwork::sotfMax( double* x )
 {
 	double max_val=0;
 	int max_loc=0;

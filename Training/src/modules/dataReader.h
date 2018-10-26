@@ -45,6 +45,7 @@ public:
 	int pdim;
 	int pmethod = POOL_MAX;
 	int non_linear = NL_RELU;
+	bool LRN = true; //Local Response Normalization
 	std::vector<cv::Mat> Kernels; //[nKernel][y][x]
 };
 

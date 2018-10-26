@@ -526,7 +526,12 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, bool GAP)
 	int rows = (int)sqrt(sImage);
 	Mat img(rows,rows,CV_64FC1);
 	for(int j = 0; j < rows; j++) for(int i = 0; i < rows; i++) img.ATD(j, i) = (double)pattern[j*rows+i];
+
+	Mat kk = Mat::ones(6, 6, CV_8UC1);
+	erode(img, img, kk);
+	normalize(img,img, 0,255,NORM_MINMAX, CV_8UC1);
 	img.convertTo(img, CV_64FC1, 1.0/255, 0);
+
 	vector<vector<Mat>> conv(CLayer.size()+1);
 	int count=1;
 	for (int i = 0; i < CLayer.size()+1; i++) {
@@ -548,7 +553,10 @@ double* dataReader::ConvNPooling(double *pattern, int sImage, bool GAP)
 				temp.release(); tmpconv.release();
 			}
 		}
+		if(CLayer[l].LRN==true) 
+			for(int k = 0; k < conv[l].size(); k++) normalize(conv[l][k],conv[l][k], 0,1,NORM_MINMAX, CV_64FC1); 
 	}
+	
 	int nPixel = conv[CLayer.size()][0].cols*conv[CLayer.size()][0].rows;
 	double* conv_pattern =  new( double[conv[CLayer.size()].size()*nPixel] );
 	if (GAP==true) {

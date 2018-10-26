@@ -22,11 +22,19 @@ save2txt(const Mat &data, string path, string str){
     fclose(pOut);
 }
 
+void 
+save2txt(const double data, string path, string str){
+    string tmp = path + str;
+    FILE *pOut = fopen(tmp.c_str(), "w");
+    fprintf(pOut, "%lf", data);
+    fclose(pOut);
+}
+
 void
 save2txt3ch(const Mat &data, string path, string str){
-    string str_r = path + str + "ch_0";
-    string str_g = path + str + "ch_1";
-    string str_b = path + str + "ch_2";
+    string str_r = path + str + "_0";
+    string str_g = path + str + "_1";
+    string str_b = path + str + "_2";
     str_r += ".csv";
     str_g += ".csv";
     str_b += ".csv";
@@ -69,9 +77,38 @@ saveConvKernel(const vector<Cvl> &CLayers, string path){
             string str2 = str + "/kernel_" + std::to_string(j);
             mkdir(str2.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
             str2 += "/";
-            save2txt(CLayers[i].layer[j].W, str2, "ch_0.csv");
+            save2txt(CLayers[i].layer[j].W, str2, "kernel.csv");
+	    save2txt(CLayers[i].layer[j].b, str2, "kernel_bias.csv");
+            //save2txt3ch(CLayers[i].layer[j].W, str2, "kernel");
+		char file_name[255];
+		sprintf(file_name,"log/layer_%d/kernel_%d/ch_0.png",i,j);
+		Mat buf;
+		normalize(CLayers[i].layer[j].W,buf, 0,255,NORM_MINMAX, CV_8U);
+		cvtColor(buf,buf,COLOR_GRAY2BGR);
+		imwrite(file_name,buf);
+		buf.release();
         }
     }
+}
+
+void
+saveOriginImage(const int ncls, const int nsample, const int nkernel, const Mat conv, string path){
+    string tmp = path;
+    mkdir(tmp.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	string str = tmp + "/layer_" + std::to_string(ncls);
+	mkdir(str.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	string str2 = str + "/kernel_" + std::to_string(nkernel);
+	mkdir(str2.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	str2 += "/";
+	string str3 = "sample_ori_" + std::to_string(nsample) + ".csv";
+	//save2txt(conv, str2, str3);
+	char file_name[255];
+	sprintf(file_name,"log/layer_%d/kernel_%d/sample_ori_%d.png",ncls,nkernel,nsample);
+	Mat buf;
+	normalize(conv,buf, 0,255,NORM_MINMAX, CV_8U);
+	cvtColor(buf,buf,COLOR_GRAY2BGR);
+	imwrite(file_name,buf);
+	buf.release();
 }
 
 void
@@ -84,12 +121,19 @@ saveConvImage(const int ncls, const int nsample, const int nkernel, const Mat co
 	mkdir(str2.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	str2 += "/";
 	string str3 = "sample_" + std::to_string(nsample) + ".csv";
-	save2txt(conv, str2, str3);
+	//save2txt(conv, str2, str3);
+	char file_name[255];
+	sprintf(file_name,"log/layer_%d/kernel_%d/sample_%d.png",ncls,nkernel,nsample);
+	Mat buf;
+	normalize(conv,buf, 0,255,NORM_MINMAX, CV_8U);
+	cvtColor(buf,buf,COLOR_GRAY2BGR);
+	imwrite(file_name,buf);
+	buf.release();
 }
 
 void
 saveConvKernelGradient(const vector<Cvl> &CLayers, string path){
-    string tmp = path + "/kernels_gradient";
+    string tmp = path;
     mkdir(tmp.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     int layers = CLayers.size();
     for(int i = 0; i < layers; i++){
@@ -100,8 +144,15 @@ saveConvKernelGradient(const vector<Cvl> &CLayers, string path){
             string str2 = str + "/kernel_" + std::to_string(j);
             mkdir(str2.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
             str2 += "/";
-            save2txt(CLayers[i].layer[j].Wgrad, str2, "ch_0.txt");
-            save2txt(CLayers[i].layer[j].Wd2, str2, "Wd2_ch_0.txt");
+            //save2txt(CLayers[i].layer[j].Wgrad, str2, "ch_0.txt");
+            //ave2txt(CLayers[i].layer[j].Wd2, str2, "Wd2_ch_0.txt");
+			char file_name[255];
+			sprintf(file_name,"log/layer_%d/kernel_%d/kernels_gradient.png",i,j);
+			Mat buf;
+			normalize(CLayers[i].layer[j].Wgrad,buf, 0,255,NORM_MINMAX, CV_8U);
+			cvtColor(buf,buf,COLOR_GRAY2BGR);
+			imwrite(file_name,buf);
+			buf.release();
         }
     }
 }

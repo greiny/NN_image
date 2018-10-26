@@ -29,8 +29,8 @@ neuralNetwork::neuralNetwork(int nInput, vector<int> nHidden, int nOutput) : nIn
 
 	//create weight lists (include bias neuron weights)
 	if (nLayer==0) {
-		wInputOutput = new( double*[nInput + 1] );
-		for ( int i=0; i <= nInput; i++ )
+		wInputOutput = new( double*[nInput] );
+		for ( int i=0; i < nInput; i++ )
 		{
 			wInputOutput[i] = new (double[nOutput]);
 			for ( int j=0; j < nOutput; j++ ) wInputOutput[i][j] = 0;
@@ -81,7 +81,7 @@ neuralNetwork::~neuralNetwork()
 
 	//delete weight storage
 	if (nLayer==0){
-		for (int i=0; i <= nInput; i++) delete[] wInputOutput[i];
+		for (int i=0; i < nInput; i++) delete[] wInputOutput[i];
 		delete[] wInputOutput;
 	}
 	else{
@@ -139,7 +139,7 @@ bool neuralNetwork::loadWeights(const char* filename)
 		}
 
 		if (nLayer==0) {
-			int num_weight = (nInput + 1) * nOutput;
+			int num_weight = (nInput) * nOutput;
 			if ( weights.size() != num_weight )
 			{
 				cout << endl << "Error - Incorrect number of weights in input file: " << filename << endl;
@@ -230,7 +230,7 @@ bool neuralNetwork::saveWeights(double hTAcc, double hGAcc, long hEpoch)
 	{
 		outputFile.precision(10); // # of floating point
 		if (nLayer==0) {
-			for ( int i=0; i <= nInput; i++ )  // '=' means loop including bias neuron
+			for ( int i=0; i <nInput; i++ )  // '=' means loop including bias neuron
 				for ( int j=0; j < nOutput; j++ ) outputFile << wInputOutput[i][j] << ","; // (nInput+1)*nHidden
 			outputFile << endl;
 		}
@@ -298,11 +298,18 @@ double neuralNetwork::getSetAccuracy( std::vector<dataEntry*>& set )
 		
 		//correct pattern flag
 		bool correctResult = true;
-		double* new_outputNeurons = clampOutput(outputNeurons);
+#if 1
+		double* new_outputNeurons = sotfMax(outputNeurons);
 		//check all outputs against desired output values
 		for ( int k = 0; k < nOutput; k++ )
 			if ( new_outputNeurons[k] != set[tp]->target[k] ) correctResult = false;
 		free(new_outputNeurons);
+#else
+		for ( int k = 0; k < nOutput; k++ )		
+			//set flag to false if desired and output differ
+			if ( clampOutput(outputNeurons[k]) != set[tp]->target[k] ) correctResult = false;
+
+#endif
 		//inc training error for a incorrect result
 		if ( !correctResult ) incorrectResults++;	
 		
@@ -380,7 +387,7 @@ void neuralNetwork::initializeWeights()
 
 	//set weights
 	if (nLayer==0) {
-		for(int i=0; i<=nInput; i++)
+		for(int i=0; i<nInput; i++)
 			for(int j=0; j<nOutput; j++) wInputOutput[i][j] = (((double)(rand()%100)+1)/100*2*rH)-rH;
 
 	}
@@ -423,7 +430,7 @@ int neuralNetwork::clampOutput( double x )
 	else return -1;
 }
 
-double* neuralNetwork::clampOutput( double* x )
+double* neuralNetwork::sotfMax( double* x )
 {
 	double max_val=0;
 	int max_loc=0;
@@ -453,7 +460,7 @@ void neuralNetwork::feedForward(double* pattern)
 			//clear value
 			outputNeurons[j] = 0;
 			//get weighted sum of pattern and bias neuron
-			for( int i=0; i <= nInput; i++ ) outputNeurons[j] += inputNeurons[i] * wInputOutput[i][j];
+			for( int i=0; i < nInput; i++ ) outputNeurons[j] += inputNeurons[i] * wInputOutput[i][j];
 			//set to result of sigmoid
 			outputNeurons[j] = activationFunction( outputNeurons[j] , NL_SIGMOID);
 		}

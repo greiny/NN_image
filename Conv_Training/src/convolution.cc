@@ -42,14 +42,14 @@ Pooling(const Mat &M, int pVert, int pHori, int poolingMethod, vector<Point> &lo
             if(POOL_MAX == poolingMethod){ 
                 double minVal = 0.0;
                 double maxVal = 0.0;
-                Point minLoc; 
+                Point minLoc;
                 Point maxLoc;
                 minMaxLoc( temp, &minVal, &maxVal, &minLoc, &maxLoc );
                 val = maxVal;
                 locat.push_back(Point(maxLoc.x + j * pHori, maxLoc.y + i * pVert));
             }elif(POOL_MEAN == poolingMethod){
                 // Mean Pooling
-                val = sum(temp)[0] / (pVert * pHori);
+                val = (double)sum(temp)[0] / (double)(pVert * pHori);
             }elif(POOL_STOCHASTIC == poolingMethod){
                 // Stochastic Pooling
                 double sumval = sum(temp)[0];
@@ -95,13 +95,13 @@ Pooling(const Mat &M, int pVert, int pHori, int poolingMethod){
             if(POOL_MAX == poolingMethod){ 
                 double minVal = 0.0;
                 double maxVal = 0.0;
-                Point minLoc; 
-                Point maxLoc;
-                minMaxLoc( temp, &minVal, &maxVal, &minLoc, &maxLoc );
+                Point minLoc(0,0);
+                Point maxLoc(0,0);
+                minMaxLoc( temp, &minVal, &maxVal, &minLoc, &maxLoc,noArray() );
                 val = maxVal;
             }elif(POOL_MEAN == poolingMethod){
                 // Mean Pooling
-                val = sum(temp)[0] / (pVert * pHori);
+                val = (double)sum(temp)[0] / (double)(pVert * pHori);
             }elif(POOL_STOCHASTIC == poolingMethod){
                 // Stochastic Pooling
                 double sumval = sum(temp)[0];
@@ -255,13 +255,14 @@ convAndPooling(const vector<Mat> &x, const vector<Cvl> &CLayers,
         vector<string> vec;
         for(int cl = 0; cl < CLayers.size(); cl ++){
             int pdim = convConfig[cl].PoolingDim;
+	    int pmtd = convConfig[cl].PoolingMtd;
             if(cl == 0){
                 // Convolution
                 for(int k = 0; k < convConfig[cl].KernelAmount; k ++){
                     string s2 = s1 + "C0K" + i2str(k);
                     Mat temp = rot90(CLayers[cl].layer[k].W, 2);
                     Mat tmpconv = convCalc(x[m], temp, CONV_SAME);
-                    tmpconv += CLayers[cl].layer[k].b;
+                    //tmpconv += CLayers[cl].layer[k].b;
                     tmpconv = nonLinearity(tmpconv);
                     map[s2] = tmpconv;
                     temp.release();
@@ -275,7 +276,7 @@ convAndPooling(const vector<Mat> &x, const vector<Cvl> &CLayers,
                     map.at(s2).copyTo(tmpconv);
                     //if(convConfig[cl].useLRN) tmpconv = localResponseNorm(map, s2);
                     vector<Point> PoolingLoc;
-                    tmpconv = Pooling(tmpconv, pdim, pdim, pooling_method, PoolingLoc);
+                    tmpconv = Pooling(tmpconv, pdim, pdim, pmtd, PoolingLoc);
                     string s3 = s2 + "P";
                     map[s3] = tmpconv;
                     loc[s3] = PoolingLoc;
@@ -291,7 +292,7 @@ convAndPooling(const vector<Mat> &x, const vector<Cvl> &CLayers,
                         string s2 = vec[tp] + "C" + i2str(cl) + "K" + i2str(k);
                         Mat temp = rot90(CLayers[cl].layer[k].W, 2);
                         Mat tmpconv = convCalc(map.at(vec[tp]), temp, CONV_SAME);
-                        tmpconv += CLayers[cl].layer[k].b;
+                        //tmpconv += CLayers[cl].layer[k].b;
                         tmpconv = nonLinearity(tmpconv);
                         map[s2] = tmpconv;
                         temp.release();
@@ -304,7 +305,7 @@ convAndPooling(const vector<Mat> &x, const vector<Cvl> &CLayers,
                         map.at(s2).copyTo(tmpconv);
                         //if(convConfig[cl].useLRN) tmpconv = localResponseNorm(map, s2);
                         vector<Point> PoolingLoc;
-                        tmpconv = Pooling(tmpconv, pdim, pdim, pooling_method, PoolingLoc);
+                        tmpconv = Pooling(tmpconv, pdim, pdim, pmtd, PoolingLoc);
                         string s3 = s2 + "P";
                         map[s3] = tmpconv;
                         loc[s3] = PoolingLoc;
@@ -356,7 +357,10 @@ hashDelta(const Mat &src, unordered_map<string, Mat> &map, int layersize, int ty
             }
         }
         int sqDim = src.rows / vecstr.size();
-        int Dim = sqrt(sqDim);
+        int Dim = 0;
+        if ((sqDim%12 != 0) && (sqrt(sqDim)!=(int)sqrt(sqDim))) cout << "!!image size not matched!! Plz check convolution.cc" << endl;
+        else if (sqrt(sqDim)==(int)sqrt(sqDim)) Dim = (int)sqrt(sqDim);
+		else if (sqDim%12 == 0) Dim = (int)(3*sqrt(sqDim/12));
         for(int i = 0; i < vecstr.size(); i++){
             Rect roi = Rect(m, i * sqDim, 1, sqDim);
             Mat temp;
@@ -383,14 +387,14 @@ convAndPooling(const vector<Mat> &x, const vector<Cvl> &CLayers, vector<vector<M
             tpvec[i].clear();
         }
         int pdim = convConfig[cl].PoolingDim;
-
+	int pmtd = convConfig[cl].PoolingMtd;
         for(int s = 0; s < nsamples; s++){
             for(int m = 0; m < res[s].size(); m++){
                 for(int k = 0; k < convConfig[cl].KernelAmount; k++)
                 {
                     Mat temp = rot90(CLayers[cl].layer[k].W, 2);
                     Mat tmpconv = convCalc(res[s][m], temp, CONV_SAME);
-                    tmpconv += CLayers[cl].layer[k].b;
+                    //tmpconv += CLayers[cl].layer[k].b;
                     tmpconv = nonLinearity(tmpconv);
                     tpvec[s].push_back(tmpconv);
                 }
@@ -403,12 +407,12 @@ convAndPooling(const vector<Mat> &x, const vector<Cvl> &CLayers, vector<vector<M
                     }
                     for(int k = 0; k < convConfig[cl].KernelAmount; k++){
                         Mat temp = tmp[k];
-                        tpvec[s][m * convConfig[cl].KernelAmount + k] = Pooling(tmp[k], pdim, pdim, pooling_method);
+			tpvec[s][m * convConfig[cl].KernelAmount + k] = Pooling(tmp[k], pdim, pdim, pmtd);
                     }
                 }else{
                     for(int k = 0; k < convConfig[cl].KernelAmount; k++){
                         Mat temp = tpvec[s][m * convConfig[cl].KernelAmount + k];
-                        tpvec[s][m * convConfig[cl].KernelAmount + k] = Pooling(temp, pdim, pdim, pooling_method);
+                        tpvec[s][m * convConfig[cl].KernelAmount + k] = Pooling(temp, pdim, pdim, pmtd);
                     }
                 }
             }
@@ -421,57 +425,107 @@ convAndPooling(const vector<Mat> &x, const vector<Cvl> &CLayers, vector<vector<M
     tpvec.clear();
 }
 
+VideoWriter strong1("log/video/strong_convolved.avi",CV_FOURCC('M','J','P','G'),60, Size(64*2,64*2),true);
+VideoWriter strong2("log/video/strong_layer1.avi",CV_FOURCC('M','J','P','G'),60, Size(64*3,64),true);
+VideoWriter strong3("log/video/strong_layer2.avi",CV_FOURCC('M','J','P','G'),60, Size(64*3,64*3),true);
+VideoWriter strong4("log/video/strong_layer3.avi",CV_FOURCC('M','J','P','G'),60, Size(64*9,64*5),true);
+VideoWriter weak1("log/video/weak_convolved.avi",CV_FOURCC('M','J','P','G'),60, Size(64*2,64*2),true);
+VideoWriter weak2("log/video/weak_layer1.avi",CV_FOURCC('M','J','P','G'),60, Size(64*3,64),true);
+VideoWriter weak3("log/video/weak_layer2.avi",CV_FOURCC('M','J','P','G'),60, Size(64*3,64*3),true);
+VideoWriter weak4("log/video/weak_layer3.avi",CV_FOURCC('M','J','P','G'),60, Size(64*9,64*5),true);
+VideoWriter none1("log/video/none_convolved.avi",CV_FOURCC('M','J','P','G'),60, Size(64*2,64*2),true);
+VideoWriter none2("log/video/none_layer1.avi",CV_FOURCC('M','J','P','G'),60, Size(64*3,64),true);
+VideoWriter none3("log/video/none_layer2.avi",CV_FOURCC('M','J','P','G'),60, Size(64*3,64*3),true);
+VideoWriter none4("log/video/none_layer3.avi",CV_FOURCC('M','J','P','G'),60, Size(64*9,64*5),true);
 void
-convAndPooling4Test(const vector<Mat> &x, const vector<Cvl> &CLayers, vector<vector<Mat> > &res){
+convAndPooling4Video(const vector<Mat> &x, const vector<Cvl> &CLayers){
+	int nsamples = x.size();
+	vector<vector<Mat> > res;
+	for(int i = 0; i < nsamples; i++){
+		vector<Mat> tmp;
+		tmp.push_back(x[i]);
+		res.push_back(tmp);
+	}
+// res: previous layer container, tpvec: current layer container
+// samples -> convlayer -> video per image
+	for(int s = 0; s < nsamples; s++)
+	{ // number of sample images
+		Mat one,two,three,four;
+		Mat step12(Size(64*2,64),CV_8UC3,Scalar::all(0));
+		Mat step34(Size(64*2,64),CV_8UC3,Scalar::all(0));
+		Mat dst(Size(64*2,64*2),CV_8UC3,Scalar::all(0));
+		Mat dst1(Size(64*3,64),CV_8UC3,Scalar::all(0));
+		Mat dst2(Size(64*3,64*3),CV_8UC3,Scalar::all(0));
+		Mat dst3(Size(64*9,64*5),CV_8UC3,Scalar::all(0));
+	 	vector<Mat> tpvec;
 
-    int nsamples = x.size();
-    res.clear();
-    for(int i = 0; i < nsamples; i++){
-        vector<Mat> tmp;
-        tmp.push_back(x[i]);
-        res.push_back(tmp);
-    }
-    vector<vector<Mat> > tpvec(nsamples);
-    for(int cl = 0; cl < convConfig.size(); cl++){
-        for(int i = 0; i < tpvec.size(); i++){
-            tpvec[i].clear();
-        }
-        int pdim = convConfig[cl].PoolingDim;
+		for(int cl = 0; cl < convConfig.size(); cl++)//3
+		{ // number of convolution layers
+			vector<Mat> aaa; 
+			int pdim = convConfig[cl].PoolingDim;
+			tpvec.clear();
+			for(int m = 0; m < res[s].size(); m++) //1->3->9
+			{ // number of convolved images in previous layer
+				for(int k = 0; k < convConfig[cl].KernelAmount; k++) //3->3->5
+				{// number of kernels
+					
+					Mat temp = rot90(CLayers[cl].layer[k].W, 2);
+					Mat tmpconv = convCalc(res[s][m], temp, CONV_SAME);
+					//tmpconv += CLayers[cl].layer[k].b;
+					tmpconv = nonLinearity(tmpconv);
+					if(cl==0){
+						normalize(res[s][m],one, 0,255,NORM_MINMAX, CV_8U);
+						normalize(tmpconv,two, 0,255,NORM_MINMAX, CV_8U);
+						cvtColor(one,one,COLOR_GRAY2BGR);
+						cvtColor(two,two,COLOR_GRAY2BGR);
+						hconcat(one,two,step12);
+						aaa.push_back(two);
+						if (aaa.size()==3) hconcat(aaa,dst1);
+					}
+					else if (cl==1){
+						normalize(tmpconv,three, 0,255,NORM_MINMAX, CV_8U);
+						cvtColor(three,three,COLOR_GRAY2BGR);
+						resize(three,three,Size(64,64));
+						aaa.push_back(three);
+						if (aaa.size()==9) dst2 = img_reshape(aaa,Size(9,1),Size(3,3));
+					}
+					else if (cl==2){
+						normalize(tmpconv,four, 0,255,NORM_MINMAX, CV_8U);
+						cvtColor(four,four,COLOR_GRAY2BGR);
+						resize(four,four,Size(64,64));
+						hconcat(three,four,step34);
+						aaa.push_back(four);
+						if (aaa.size()==45) dst3 = img_reshape(aaa,Size(45,1),Size(9,5));
+					}
+					tpvec.push_back(tmpconv);
+				}
+			}
+			swap(res[s], tpvec);
+			aaa.clear();
+		}
+		vconcat(step12,step34,dst);
+		if(s==0){strong1 << dst; strong2 << dst1; strong3 << dst2; strong4 << dst3; }
+		else if(s==1) {weak1 << dst; weak2 << dst1; weak3 << dst2; weak4 << dst3; }
+		else if(s==2) {none1<< dst; none2 << dst1; none3 << dst2; none4 << dst3; }
+		tpvec.clear();
+	}
 
-        for(int s = 0; s < nsamples; s++){
-            for(int m = 0; m < res[s].size(); m++){
-                for(int k = 0; k < convConfig[cl].KernelAmount; k++)
-                {
-                    Mat temp = rot90(CLayers[cl].layer[k].W, 2);
-                    Mat tmpconv = convCalc(res[s][m], temp, CONV_SAME);
-                    if (s%10 == 1) saveConvImage(cl,s,k, tmpconv, "log/");
-                    tmpconv += CLayers[cl].layer[k].b;
-                    tmpconv = nonLinearity(tmpconv);
-                    tpvec[s].push_back(tmpconv);
-                }
-                if(convConfig[cl].useLRN){
-                    std::vector<Mat>tmp;
-                    for(int k = 0; k < convConfig[cl].KernelAmount; k++){
-                        Mat temp = tpvec[s][m * convConfig[cl].KernelAmount + k];
-                        temp = localResponseNorm(tpvec, cl, k, s, m);
-                        tmp.push_back(temp);
-                    }
-                    for(int k = 0; k < convConfig[cl].KernelAmount; k++){
-                        Mat temp = tmp[k];
-                        tpvec[s][m * convConfig[cl].KernelAmount + k] = Pooling(tmp[k], pdim, pdim, pooling_method);
-                    }
-                }else{
-                    for(int k = 0; k < convConfig[cl].KernelAmount; k++){
-                        Mat temp = tpvec[s][m * convConfig[cl].KernelAmount + k];
-                        tpvec[s][m * convConfig[cl].KernelAmount + k] = Pooling(temp, pdim, pdim, pooling_method);
-                    }
-                }
-            }
-        }
-        swap(res, tpvec);
-    }   
-    for(int i = 0; i < tpvec.size(); i++){
-        tpvec[i].clear();
-    }  
-    tpvec.clear();
+}
+
+Mat img_reshape(vector<Mat> &arr, Size original, Size changed){
+	int nimage = original.width*original.height;
+	if (arr.size() != nimage || nimage != changed.width*changed.height) cout << "image matrix not matched!!" << endl;
+	Mat result(Size(arr[0].cols*(nimage/changed.height),0),CV_8UC3,Scalar::all(0));
+	for(int i=0;i < changed.height; i++)
+	{
+		vector<Mat> vimg;
+		Mat container(Size(arr[0].cols*(nimage/changed.height),arr[0].rows),CV_8UC3,Scalar::all(0));
+		for(int j=0; j < nimage; j++)
+			if(j<changed.width*(i+1) && j>=changed.width*i) vimg.push_back(arr[j]);
+		hconcat(vimg,container);
+		vconcat(container,result,result);
+		vimg.clear();
+		container.release();
+	}
+	return result;
 }

@@ -46,22 +46,20 @@ int main()
 	d.loadDataFile4Train("data/cast_training_data1.csv",nInput,nOutput,tRatio,vRatio,NML);
 	d.setCreationApproach( STATIC, 10 );
 #else
-	// for image
+	//Layer Construction
 	int sImage = 64*64;
 	int nOutput = 2;
 	vector<ConvLayer> CLayer;
-	ConvLayer CLayer1, CLayer2;
+	ConvLayer CLayer1, CLayer2, CLayer3,CLayer4;
 		CLayer1.nKernel = 3;
-		CLayer1.sKernel = 15;
-		CLayer1.pdim = 2; CLayer1.pmethod = POOL_MAX;
+		CLayer1.sKernel = 5;
+		CLayer1.pdim = 2;
+		CLayer1.pmethod = POOL_MAX;
 		CLayer1.non_linear = NL_RELU;
+		CLayer1.LRN = true;
 		CLayer.push_back(CLayer1);
-		CLayer2.nKernel = 5;
-		CLayer2.sKernel = 9;
-		CLayer2.pdim = 2; CLayer2.pmethod = POOL_MAX;
-		CLayer2.non_linear = NL_RELU;
-		CLayer.push_back(CLayer2);
-	bool GAP = false;
+	vector<int> FCLayer{}; // #neuron -> FCLayer{256,64}
+	bool GAP = true;
 
 	int nInput = 1;
 	for(int i=0; i<CLayer.size(); i++) nInput = nInput*CLayer[i].nKernel;

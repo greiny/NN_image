@@ -2,6 +2,8 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include "opencv2/objdetect/objdetect.hpp"
+#include "opencv2/video/tracking.hpp"
 #include "data_structure.h"
 #include "convolution.h"
 #include "string_proc.h"
@@ -74,7 +76,6 @@ extern bool is_gradient_checking;
 extern bool use_log;
 extern int log_iter;
 extern int batch_size;
-extern int pooling_method;
 extern int non_linearity;
 extern int training_epochs;
 extern double lrate_w;

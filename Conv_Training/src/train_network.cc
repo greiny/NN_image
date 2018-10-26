@@ -38,7 +38,7 @@ trainNetwork(const vector<Mat> &x, const Mat &y, vector<Cvl> &CLayers, vector<Fc
             hlWd2.push_back(tempWd2);
             hlbd2.push_back(tempbd2);
         }
-        
+
         vector<vector<Mat> > v_cvl_W;
         vector<vector<double> > v_cvl_b;
         vector<vector<Mat> > cvlWd2;
@@ -63,6 +63,7 @@ trainNetwork(const vector<Mat> &x, const Mat &y, vector<Cvl> &CLayers, vector<Fc
             cvlWd2.push_back(tmpvecWd2);
             cvlbd2.push_back(tmpvecbd2);
         }
+
         double Momentum_w = 0.5;
         double Momentum_b = 0.5;
         double Momentum_d2 = 0.5;
@@ -71,6 +72,17 @@ trainNetwork(const vector<Mat> &x, const Mat &y, vector<Cvl> &CLayers, vector<Fc
         double lr_b_s;
         double mu = 1e-2;
         int k = 0;
+
+        vector<Mat> imgset;
+	imgset.push_back(x[41]);
+	//cout << "x[41] -> "<< y.at<double>(0,41) << endl;
+        imgset.push_back(x[36]);
+	//cout << "x[36] -> "<< y.at<double>(0,36) << endl;
+	imgset.push_back(x[8000]);
+	//cout << "x[8000] -> "<<y.at<double>(0,8000) << endl;
+	predictLogging("log/predic_result.txt");
+	costLogging("log/cost_result.txt");
+
         for(int epo = 1; epo <= training_epochs; epo++){
             for(; k <= iter_per_epo * epo; k++){
                 log_iter = k;
@@ -80,8 +92,10 @@ trainNetwork(const vector<Mat> &x, const Mat &y, vector<Cvl> &CLayers, vector<Fc
                 vector<Mat> batchX;
                 Mat batchY = Mat::zeros(y.rows, batch_size, CV_64FC1); 
                 getSample(x, &batchX, y, &batchY, batch_size, SAMPLE_COLS);
-                cout<<"epoch: "<<epo<<", iter: "<<k;//<<endl;           
-                getNetworkCost(batchX, batchY, CLayers, HiddenLayers, smr);
+                cout<<"epoch: "<<epo<<", iter: "<<k;//<<endl;
+                getNetworkCost(batchX, batchY, CLayers, HiddenLayers, smr,epo,k);
+                convAndPooling4Video(imgset, CLayers);
+
                 // softmax update
                 smrWd2 = Momentum_d2 * smrWd2 + (1.0 - Momentum_d2) * smr.Wd2;
                 smrbd2 = Momentum_d2 * smrbd2 + (1.0 - Momentum_d2) * smr.bd2;
@@ -91,6 +105,7 @@ trainNetwork(const vector<Mat> &x, const Mat &y, vector<Cvl> &CLayers, vector<Fc
                 v_smr_b = v_smr_b * Momentum_b + (1.0 - Momentum_b) * smr.bgrad.mul(lr_b);
                 smr.W -= v_smr_W;
                 smr.b -= v_smr_b;
+
                 // full-connected layer update
                 for(int i = 0; i < HiddenLayers.size(); i++){
                     hlWd2[i] = Momentum_d2 * hlWd2[i] + (1.0 - Momentum_d2) * HiddenLayers[i].Wd2;
@@ -102,6 +117,7 @@ trainNetwork(const vector<Mat> &x, const Mat &y, vector<Cvl> &CLayers, vector<Fc
                     HiddenLayers[i].W -= v_hl_W[i];
                     HiddenLayers[i].b -= v_hl_b[i];
                 }
+
                 // convolutional layer update
                 for(int cl = 0; cl < CLayers.size(); cl++){
                     for(int i = 0; i < convConfig[cl].KernelAmount; i++){
@@ -115,19 +131,25 @@ trainNetwork(const vector<Mat> &x, const Mat &y, vector<Cvl> &CLayers, vector<Fc
                         CLayers[cl].layer[i].b -= v_cvl_b[cl][i];
                     }
                 }
+
                 batchX.clear();
                 vector<Mat>().swap(batchX);
                 batchY.release();
                 //$$LOG saveConvKernel(CLayers, path); $$_LOG
-            } 
+            }
             if(! is_gradient_checking){
                 cout<<"Test with training data: ";
                 testNetwork(x, y, CLayers, HiddenLayers, smr);
                 cout<<"Test with testing data: ";
-                testNetwork4test(tx, ty, CLayers, HiddenLayers, smr);
+                testNetwork(tx, ty, CLayers, HiddenLayers, smr);
+
+				save2txt(HiddenLayers[0].W,"log/","weight.txt");
+				save2txt(HiddenLayers[0].b,"log/","weight_bias.txt");
+				save2txt(smr.W,"log/","smr.txt");
+				save2txt(smr.b,"log/","smr_bias.txt");
+				saveConvKernel(CLayers, "log/");
             }
         }
-
         v_smr_W.release();
         v_smr_b.release();
         v_hl_W.clear();

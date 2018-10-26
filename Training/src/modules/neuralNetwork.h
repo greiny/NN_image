@@ -46,6 +46,11 @@ private:
 	bool loggingEnabled;
 	fstream outputFile;
 
+#if 0
+	vector<double**> aWeight;
+	vector<double**> ErrorGradient;
+#endif
+
 	//Friends
 	//--------------------------------------------------------------------------------------------
 	friend neuralNetworkTrainer;
@@ -68,7 +73,7 @@ public:
 	void getRegression( std::vector<dataEntry*>& set, int i );
 	double getSetMSE( std::vector<dataEntry*>& set );
 	int clampOutput( double x );
-	double* clampOutput( double* x );
+	double* sotfMax( double* x );
 
 	//private methods
 	//--------------------------------------------------------------------------------------------

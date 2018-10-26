@@ -29,8 +29,8 @@ neuralNetworkTrainer::neuralNetworkTrainer( neuralNetwork *nn )	:	NN(nn),
 	//create delta lists
 	//--------------------------------------------------------------------------------------------------------
 	if (NN->nLayer==0) {
-		deltaInputOutput = new( double*[NN->nInput] );
-		for ( int i=0; i < NN->nInput; i++ ) 
+		deltaInputOutput = new( double*[NN->nInput + 1] );
+		for ( int i=0; i <= NN->nInput; i++ ) 
 		{
 			deltaInputOutput[i] = new (double[NN->nOutput]);
 			for ( int j=0; j < NN->nOutput; j++ ) deltaInputOutput[i][j] = 0;
@@ -260,12 +260,11 @@ void neuralNetworkTrainer::runTrainingEpoch( vector<dataEntry*> trainingSet )
 			if ( NN->clampOutput( NN->outputNeurons[k] ) != trainingSet[tp]->target[k] ) patternCorrect = false;
 			//calculate MSE
 			mse += pow(( NN->outputNeurons[k] - trainingSet[tp]->target[k] ), 2);
-		}	
+		}
 #endif
-
 		//if pattern is incorrect add to incorrect count
-		if ( !patternCorrect ) incorrectPatterns++;
-	
+		if ( !patternCorrect ) incorrectPatterns++;	
+		
 	}//end for
 
 	//if using batch learning - update the weights
@@ -290,7 +289,7 @@ void neuralNetworkTrainer::backpropagate( double* desiredOutputs )
 			outputErrorGradients[j] = getOutputErrorGradient( desiredOutputs[j], NN->outputNeurons[j] );
 		
 			//for all nodes in hidden layer and bias neuron
-			for (int i = 0; i < NN->nInput; i++)
+			for (int i = 0; i <= NN->nInput; i++)
 			{				
 				//calculate change in weight
 				if ( !useBatch ) deltaInputOutput[i][j] = learningRate * NN->inputNeurons[i] * outputErrorGradients[j] + momentum * deltaInputOutput[i][j];
@@ -361,7 +360,7 @@ void neuralNetworkTrainer::updateWeights()
 {
 	if (NN->nLayer==0) {
 		//input -> output weights
-		for (int i = 0; i < NN->nInput; i++)
+		for (int i = 0; i <= NN->nInput; i++)
 		{
 			for (int j = 0; j < NN->nOutput; j++)
 			{

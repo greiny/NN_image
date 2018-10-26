@@ -1,6 +1,5 @@
-1. clampoutput upgrade to find max value -> neuralNetwork.cpp
-2. activation function classification -> neuralNetwork.cpp
-3. guide to write main script-> main_training.cpp
+1. Local Response Normalizatoin(LRN) on CNN is updated -> dataReader.h, dataReader.cpp, main.cpp
+2. if GAP is true, bias neuron not included -> neuralNetwork.cpp, neuralNetworkTrainer.cpp
 
 !Todo! 
 layer integration input,hidden,output -> layer[0],layer[1],layer[2]
